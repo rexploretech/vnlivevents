@@ -88,10 +88,22 @@ export default function HomeInvitationPage() {
     }
   }, [event.title, event.eventType]);
 
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(window.location.href);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2600);
+  const handleShareLink = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: event.title,
+          text: `Join us for the live stream of ${event.title}'s ${event.eventType}`,
+          url: window.location.href,
+        });
+      } catch (err) {
+        console.log('Error sharing:', err);
+      }
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2600);
+    }
   };
 
   const themeVars = {
@@ -228,14 +240,12 @@ export default function HomeInvitationPage() {
         </AnimatePresence>
 
         {/* Details Grid */}
-        <div className="mb-16 w-full max-w-xl mx-auto">
-          <DetailGrid
-            venue={event.venue}
-            city={event.city}
-            accentColor={event.accentColor}
-            accentColorRgb={event.accentColorRgb}
-          />
-        </div>
+        <DetailGrid
+          venue={event.venue}
+          city={event.city}
+          accentColor={event.accentColor}
+          accentColorRgb={event.accentColorRgb}
+        />
 
         {/* Invitation Message */}
         <motion.div {...fadeInUp} className="max-w-2xl mt-16">
@@ -255,13 +265,13 @@ export default function HomeInvitationPage() {
           />
           
           <button
-            onClick={handleCopyLink}
+            onClick={handleShareLink}
             className="flex items-center space-x-2 px-6 py-3 rounded-sm hover:bg-white/5 transition-colors"
             style={{ border: `1px solid rgba(${event.accentColorRgb}, 0.2)` }}
           >
             <Share2 size={16} style={{ color: event.accentColor }} />
             <span className="font-cinzel text-xs text-cream uppercase tracking-widest">
-              {copied ? 'Link Copied' : 'Copy Link'}
+              {copied ? 'Link Copied' : 'Share Link'}
             </span>
           </button>
 
