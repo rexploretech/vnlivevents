@@ -38,7 +38,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${cormorant.variable} ${cinzel.variable} ${jost.variable}`}>
+    <html lang="en" className={`${cormorant.variable} ${cinzel.variable} ${jost.variable}`} suppressHydrationWarning>
       <body className="antialiased font-sans text-cream bg-maroon selection:bg-gold/30 selection:text-gold-light min-h-screen">
         <CustomCursor />
         {children}

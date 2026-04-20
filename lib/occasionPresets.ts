@@ -176,4 +176,5 @@ export interface EventData {
   particleColors: string[];
   overlayGradient: string;
   showPetals: boolean;
+  useCustomThumbnail?: boolean;
 }
