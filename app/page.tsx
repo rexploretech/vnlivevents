@@ -128,11 +128,11 @@ export default function HomeInvitationPage() {
 
         {/* Event Type Badge */}
         <motion.div {...fadeInUp} className="flex flex-col items-center mb-8">
-          <div className="w-16 h-[1px] mb-4" style={{ backgroundColor: `rgba(${event.accentColorRgb}, 0.4)` }} />
-          <p className="font-sans font-bold text-[10px] uppercase text-warm-gray tracking-[0.3em] mb-1">
+          <div className="w-12 h-[2px] mb-6 shadow-[0_0_10px_rgba(var(--theme-accent-rgb),0.5)]" style={{ backgroundColor: `rgba(${event.accentColorRgb}, 0.8)` }} />
+          <p className="font-sans font-bold text-[11px] uppercase text-cream tracking-[0.4em] mb-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
             You Are Cordially Invited
           </p>
-          <p className="font-sans font-bold text-[11px] uppercase tracking-[0.25em] mt-1" style={{ color: `rgba(${event.accentColorRgb}, 0.8)` }}>
+          <p className="font-sans font-bold text-[12px] uppercase tracking-[0.25em] drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]" style={{ color: event.accentColor }}>
             {event.eventType}
           </p>
         </motion.div>
@@ -181,15 +181,15 @@ export default function HomeInvitationPage() {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setIsModalOpen(true)}
-          className="rounded-full px-10 py-5 md:px-12 md:py-6 flex items-center shadow-xl border-2 space-x-3 md:space-x-4 mb-16 relative overflow-hidden transition-all duration-300"
+          className="rounded-full px-8 py-4 md:px-10 md:py-5 flex items-center shadow-xl border-2 space-x-2 md:space-x-3 mb-12 relative overflow-hidden transition-all duration-300"
           style={{
             background: `linear-gradient(135deg, ${event.accentColor}, ${event.secondaryColor})`,
             borderColor: 'rgba(255,255,255,0.2)',
             boxShadow: `0 0 30px rgba(${event.accentColorRgb}, 0.5)`,
           }}
         >
-          <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-red-600 animate-live-pulse shadow-[0_0_10px_rgba(220,38,38,0.8)]" />
-          <span className="font-sans font-bold text-[14px] md:text-[16px] uppercase tracking-[0.25em] text-white drop-shadow-md">
+          <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-red-600 animate-live-pulse shadow-[0_0_10px_rgba(220,38,38,0.8)]" />
+          <span className="font-sans font-bold text-[12px] md:text-[14px] uppercase tracking-[0.25em] text-white drop-shadow-md">
             Watch Live Stream
           </span>
         </motion.button>
@@ -197,16 +197,12 @@ export default function HomeInvitationPage() {
         <div className="w-px h-16 mb-8" style={{ background: `linear-gradient(to bottom, rgba(${event.accentColorRgb}, 0.3), transparent)` }} />
 
         {/* Details Grid */}
-        <motion.div {...fadeInUp}>
-          <DetailGrid
-            venue={event.venue}
-            city={event.city}
-            photographerName={event.photographerName}
-            streamPlatform={event.streamPlatform}
-            accentColor={event.accentColor}
-            accentColorRgb={event.accentColorRgb}
-          />
-        </motion.div>
+        <DetailGrid
+          venue={event.venue}
+          city={event.city}
+          accentColor={event.accentColor}
+          accentColorRgb={event.accentColorRgb}
+        />
 
         {/* Invitation Message */}
         <motion.div {...fadeInUp} className="max-w-2xl mt-16">
