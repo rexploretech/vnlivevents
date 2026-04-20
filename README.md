@@ -1,36 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎬 LiveFrame: Virtual Presence Invitations
 
-## Getting Started
+**LiveFrame** is a premium, interactive web experience designed to bridge the physical gap for ceremonies, weddings, and live events. It transforms a standard invitation into a cinematic countdown and live-streaming hub.
 
-First, run the development server:
+## ✨ Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Cinematic Experience**: Immersive UI with background particles, custom typography, and fluid Framer Motion animations.
+- **Smart Countdown**: Real-time countdown that automatically flips to the Live Stream once the event begins.
+- **Integrated Live Player**: Custom-styled YouTube/Live embed player with "External Player" fallback.
+- **Dynamic Theming**: Support for custom primary/secondary colors and background images (via `EventData`).
+- **Web Preview Thumbnails**: Intelligent thumbnail selection between YouTube defaults and custom high-res backgrounds.
+- **Guest Interactions**: "Leave a Blessing" guestbook (mock) and social share integration.
+- **Utility Tools**: "Add to Calendar" support for Google, iCal, and Outlook.
+- **Ambient Audio**: Built-in audio player for mood-setting background music.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠️ Technology Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Framework**: Next.js 15 (App Router)
+- **Styling**: Vanilla CSS + Tailwind-ish tokens
+- **Animations**: Framer Motion
+- **Icons**: Lucide React
+- **Design**: Premium glassmorphism and cinematic layering
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🚀 Recent Accomplishments
 
-## Learn More
+- **Live Stream Player Migration**: Successfully implemented a production-ready YouTube embed system that handles URL normalization and autoplay.
+- **Countdown-to-Live Logic**: Engineered a seamless state transition that replaces the timer with the video player at the exact millisecond of the event start.
+- **UI Refinement**: Implemented a responsive, mobile-first invitation layout with interactive elements like the social share and guestbook sections.
+- **Dynamic Content Engine**: Created the infrastructure for `EventData` presets (wedding, birthdays, etc.) with custom color palettes and visual effects like flower petals.
+- **Event Metadata Integration**: SEO-ready page titles and meta-information that update based on the specific event being viewed.
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🛠️ Installation & Setup
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Run the development server:
+   ```bash
+   npm run dev
+   ```
+4. Open [http://localhost:3000](http://localhost:3000)
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+*Built with ❤️ for special moments.*
