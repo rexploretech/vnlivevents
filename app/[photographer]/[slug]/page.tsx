@@ -5,7 +5,6 @@ import { Share2, MessageSquare, Send } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ParticleSystem from '@/components/invitation/ParticleSystem';
 import CountdownTimer from '@/components/invitation/CountdownTimer';
-import WatchLiveModal from '@/components/invitation/WatchLiveModal';
 import DetailGrid from '@/components/invitation/DetailGrid';
 import AddToCalendar from '@/components/invitation/AddToCalendar';
 import AmbientAudio from '@/components/invitation/AmbientAudio';
@@ -49,11 +48,11 @@ const fadeInUp = {
 };
 
 export default function DynamicInvitationPage() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [event, setEvent] = useState<EventData>(defaultEvent);
   const [guestMessage, setGuestMessage] = useState('');
   const [showGuestbook, setShowGuestbook] = useState(false);
+  const [isLive, setIsLive] = useState(false);
 
   useEffect(() => {
     const loadEvent = () => {
@@ -62,6 +61,12 @@ export default function DynamicInvitationPage() {
         try {
           const parsed = JSON.parse(storedData) as EventData;
           setEvent(parsed);
+          
+          // Check if already live based on initial load
+          const target = new Date(parsed.dateRaw);
+          if (target.getTime() <= Date.now()) {
+            setIsLive(true);
+          }
         } catch (err) {
           console.error('Failed to parse simulated event', err);
         }
@@ -172,28 +177,50 @@ export default function DynamicInvitationPage() {
           transition={{ ...fadeInUp.transition, delay: 0.6 }}
           className="mb-12"
         >
-          <CountdownTimer targetDate={event.dateRaw} accentColor={event.accentColor} accentColorRgb={event.accentColorRgb} />
+          <CountdownTimer 
+            targetDate={event.dateRaw} 
+            accentColor={event.accentColor} 
+            accentColorRgb={event.accentColorRgb}
+            onComplete={() => setIsLive(true)} 
+          />
         </motion.div>
 
         {/* Watch Live CTA */}
-        <motion.button
-          {...fadeInUp}
-          transition={{ ...fadeInUp.transition, delay: 0.7 }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => setIsModalOpen(true)}
-          className="rounded-full px-8 py-4 md:px-10 md:py-5 flex items-center shadow-xl border-2 space-x-2 md:space-x-3 mb-12 relative overflow-hidden transition-all duration-300"
-          style={{
-            background: `linear-gradient(135deg, ${event.accentColor}, ${event.secondaryColor})`,
-            borderColor: 'rgba(255,255,255,0.2)',
-            boxShadow: `0 0 30px rgba(${event.accentColorRgb}, 0.5)`,
-          }}
-        >
-          <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-red-600 animate-live-pulse shadow-[0_0_10px_rgba(220,38,38,0.8)]" />
-          <span className="font-sans font-bold text-[12px] md:text-[14px] uppercase tracking-[0.25em] text-white drop-shadow-md">
-            Watch Live Stream
-          </span>
-        </motion.button>
+        <AnimatePresence>
+          {isLive && (
+            <motion.a
+              key="live-button"
+              href={event.streamEmbedUrl.includes('youtube.com/embed/') 
+                ? event.streamEmbedUrl.replace('youtube.com/embed/', 'youtube.com/watch?v=')
+                : event.streamEmbedUrl
+              }
+              target="_blank"
+              rel="noopener noreferrer"
+              initial={{ opacity: 0, scale: 0.5, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.5, y: 20 }}
+              transition={{ 
+                type: "spring",
+                stiffness: 260,
+                damping: 20,
+                delay: 0.2
+              }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="rounded-full px-8 py-4 md:px-10 md:py-5 flex items-center shadow-xl border-2 space-x-2 md:space-x-3 mb-12 relative overflow-hidden transition-all duration-300 no-underline"
+              style={{
+                background: `linear-gradient(135deg, ${event.accentColor}, ${event.secondaryColor})`,
+                borderColor: 'rgba(255,255,255,0.2)',
+                boxShadow: `0 0 30px rgba(${event.accentColorRgb}, 0.5)`,
+              }}
+            >
+              <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-red-600 animate-live-pulse shadow-[0_0_10px_rgba(220,38,38,0.8)]" />
+              <span className="font-sans font-bold text-[12px] md:text-[14px] uppercase tracking-[0.25em] text-white drop-shadow-md">
+                Watch Live Stream
+              </span>
+            </motion.a>
+          )}
+        </AnimatePresence>
 
         {/* Details Grid */}
         <div className="mb-16 w-full max-w-xl mx-auto">
@@ -280,13 +307,6 @@ export default function DynamicInvitationPage() {
         </AnimatePresence>
 
       </main>
-
-      {/* Stream Modal */}
-      <WatchLiveModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        streamEmbedUrl={event.streamEmbedUrl}
-      />
     </div>
   );
 }

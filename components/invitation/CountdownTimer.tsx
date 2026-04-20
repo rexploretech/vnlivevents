@@ -7,6 +7,7 @@ interface CountdownTimerProps {
   targetDate: string;
   accentColor?: string;
   accentColorRgb?: string;
+  onComplete?: () => void;
 }
 
 function useResponsiveFontSize() {
@@ -35,8 +36,10 @@ export default function CountdownTimer({
   targetDate,
   accentColor = '#C9A84C',
   accentColorRgb = '201, 168, 76',
+  onComplete,
 }: CountdownTimerProps) {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [isComplete, setIsComplete] = useState(false);
   const fontSize = useResponsiveFontSize();
 
   useEffect(() => {
@@ -58,6 +61,10 @@ export default function CountdownTimer({
       const diff = target.getTime() - Date.now();
       
       if (diff <= 0) {
+        if (!isComplete) {
+          setIsComplete(true);
+          onComplete?.();
+        }
         return { days: 0, hours: 0, minutes: 0, seconds: 0 };
       }
       
@@ -69,10 +76,16 @@ export default function CountdownTimer({
       };
     };
 
-    setTimeLeft(calcTimeLeft());
-    const timer = setInterval(() => setTimeLeft(calcTimeLeft()), 1000);
+    const initialTime = calcTimeLeft();
+    setTimeLeft(initialTime);
+    
+    const timer = setInterval(() => {
+      const newTime = calcTimeLeft();
+      setTimeLeft(newTime);
+    }, 1000);
+    
     return () => clearInterval(timer);
-  }, [targetDate]);
+  }, [targetDate, onComplete, isComplete]);
 
   return (
     <div className="grid grid-flow-col gap-2 sm:gap-3 md:gap-4 text-center auto-cols-max">
