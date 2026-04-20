@@ -202,7 +202,7 @@ export default function HomeInvitationPage() {
         <motion.h1 
           {...fadeInUp}
           transition={{ ...fadeInUp.transition, delay: 0.2 }}
-          className="font-serif italic font-bold text-5xl sm:text-6xl md:text-8xl lg:text-[96px] leading-[1.1] mb-4 max-w-[90vw] mx-auto break-words" 
+          className="font-serif italic font-bold text-5xl sm:text-6xl md:text-8xl lg:text-[96px] leading-[1.1] mb-4 max-w-[90vw] mx-auto wrap-break-word" 
           style={{ color: `rgba(${event.accentColorRgb}, 0.95)`, textShadow: `0 4px 20px rgba(0,0,0,0.5)` }}
         >
           {event.title}
