@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Counter from './Counter';
 
 interface CountdownTimerProps {
   targetDate: string;
@@ -50,32 +51,22 @@ export default function CountdownTimer({
     return () => clearInterval(timer);
   }, [targetDate]);
 
-  const fmt = (n: number) => n.toString().padStart(2, '0');
-
   return (
-    <div className="grid grid-flow-col gap-3 md:gap-5 text-center auto-cols-max">
+    <div className="grid grid-flow-col gap-3 md:gap-4 text-center auto-cols-max">
       <div className="flex flex-col items-center p-2 md:p-3 rounded-lg bg-black/50 border border-amber-500/30">
-        <span className="font-cinzel text-5xl md:text-6xl text-amber-400 font-bold drop-shadow-lg" style={{ color: accentColor, textShadow: '0 0 20px rgba(201,168,76,0.5)' }}>
-          {fmt(timeLeft.days)}
-        </span>
+        <Counter value={timeLeft.days} places={[100, 10, 1]} fontSize={48} textColor={accentColor} gap={2} />
         <span className="text-xs md:text-sm uppercase tracking-widest mt-1 text-amber-200/80">Days</span>
       </div>
       <div className="flex flex-col items-center p-2 md:p-3 rounded-lg bg-black/50 border border-amber-500/30">
-        <span className="font-cinzel text-5xl md:text-6xl text-amber-400 font-bold drop-shadow-lg" style={{ color: accentColor, textShadow: '0 0 20px rgba(201,168,76,0.5)' }}>
-          {fmt(timeLeft.hours)}
-        </span>
+        <Counter value={timeLeft.hours} places={[10, 1]} fontSize={48} textColor={accentColor} gap={2} />
         <span className="text-xs md:text-sm uppercase tracking-widest mt-1 text-amber-200/80">Hours</span>
       </div>
       <div className="flex flex-col items-center p-2 md:p-3 rounded-lg bg-black/50 border border-amber-500/30">
-        <span className="font-cinzel text-5xl md:text-6xl text-amber-400 font-bold drop-shadow-lg" style={{ color: accentColor, textShadow: '0 0 20px rgba(201,168,76,0.5)' }}>
-          {fmt(timeLeft.minutes)}
-        </span>
+        <Counter value={timeLeft.minutes} places={[10, 1]} fontSize={48} textColor={accentColor} gap={2} />
         <span className="text-xs md:text-sm uppercase tracking-widest mt-1 text-amber-200/80">Min</span>
       </div>
       <div className="flex flex-col items-center p-2 md:p-3 rounded-lg bg-black/50 border border-amber-500/30">
-        <span className="font-cinzel text-5xl md:text-6xl text-amber-400 font-bold drop-shadow-lg" style={{ color: accentColor, textShadow: '0 0 20px rgba(201,168,76,0.5)' }}>
-          {fmt(timeLeft.seconds)}
-        </span>
+        <Counter value={timeLeft.seconds} places={[10, 1]} fontSize={48} textColor={accentColor} gap={2} />
         <span className="text-xs md:text-sm uppercase tracking-widest mt-1 text-amber-200/80">Sec</span>
       </div>
     </div>
