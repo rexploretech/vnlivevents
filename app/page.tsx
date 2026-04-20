@@ -42,11 +42,8 @@ export default function HomeInvitationPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [event, setEvent] = useState<EventData>(mockEvent);
-  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    setIsMounted(true);
-
     const loadEvent = () => {
       const storedData = localStorage.getItem('liveframe_mock_event');
       if (storedData) {
@@ -102,7 +99,8 @@ export default function HomeInvitationPage() {
     }
   }
 
-  if (!isMounted) return null; // Avoid hydration mismatch on dynamic content
+  // Show content immediately without waiting for isMounted to avoid blank page
+  // Use default mock event data until localStorage loads
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-near-black" style={themeVars}>
