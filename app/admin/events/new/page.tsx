@@ -37,6 +37,7 @@ export default function NewEventPage() {
     contactPhone: '',
     accentColor: preset.accentColor,
     secondaryColor: preset.secondaryColor,
+    showPetals: true,
   });
 
   useEffect(() => {
@@ -67,6 +68,7 @@ export default function NewEventPage() {
             contactPhone: parsed.contactPhone || '',
             accentColor: parsed.accentColor || OCCASION_PRESETS[parsed.occasionType as OccasionType || 'wedding'].accentColor,
             secondaryColor: parsed.secondaryColor || OCCASION_PRESETS[parsed.occasionType as OccasionType || 'wedding'].secondaryColor,
+            showPetals: parsed.showPetals !== undefined ? parsed.showPetals : true,
           });
         }
       } catch (e) {
@@ -88,7 +90,7 @@ export default function NewEventPage() {
     }));
   };
 
-  const updateField = (field: string, value: string) => {
+  const updateField = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -416,6 +418,19 @@ export default function NewEventPage() {
                   value={formData.secondaryColor}
                   onChange={(e) => updateField('secondaryColor', e.target.value)}
                   className="w-10 h-10 p-1 bg-[#0d0008] border border-gold/20 rounded-sm cursor-pointer"
+                />
+              </div>
+
+              <div className="flex items-center justify-between pt-4 border-t border-gold/10">
+                <div>
+                  <label className="text-xs uppercase tracking-wider text-warm-gray block mb-1">Petal Rain</label>
+                  <span className="text-[10px] text-cream/40">Enable falling flower petals</span>
+                </div>
+                <input 
+                  type="checkbox" 
+                  checked={formData.showPetals}
+                  onChange={(e) => updateField('showPetals', e.target.checked)}
+                  className="w-5 h-5 accent-gold cursor-pointer"
                 />
               </div>
 

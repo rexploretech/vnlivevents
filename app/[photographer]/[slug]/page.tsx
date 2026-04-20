@@ -1,15 +1,20 @@
 'use client';
 
-import { useState } from 'react';
-import Head from 'next/head';
-import { Share2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Share2, MessageSquare, Send } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import ParticleSystem from '@/components/invitation/ParticleSystem';
 import CountdownTimer from '@/components/invitation/CountdownTimer';
 import WatchLiveModal from '@/components/invitation/WatchLiveModal';
 import DetailGrid from '@/components/invitation/DetailGrid';
+import AddToCalendar from '@/components/invitation/AddToCalendar';
+import AmbientAudio from '@/components/invitation/AmbientAudio';
+import { type EventData } from '@/lib/occasionPresets';
 
-// Mock event data
-const mockEvent = {
+// This dynamic page will eventually fetch from Firebase based on params
+// For now, we sync with the same localStorage mock as the home page for demo purposes
+const defaultEvent: EventData = {
+  occasionType: 'wedding',
   photographerName: 'Aryan Sharma',
   photographerRole: 'Professional Cinematographer',
   photographerInitials: 'AS',
@@ -19,17 +24,59 @@ const mockEvent = {
   dateFormatted: '15 MAY 2026',
   timeFormatted: '09:00 AM IST',
   tagline: 'Two souls, one beautiful journey.',
-  bodyMessage: 'We solicit your gracious virtual presence as we embark on this beautiful journey of togetherness. Rejoin us from wherever you are to celebrate our love and bless us.',
+  bodyMessage: 'We solicit your gracious virtual presence as we embark on this beautiful journey of togetherness. Join us from wherever you are to celebrate our love and bless us.',
   venue: 'Lotus Garden Banquet Hall',
   city: 'Mumbai, Maharashtra',
   streamPlatform: 'YouTube Live',
   streamEmbedUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-  backgroundUrl: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=2000&auto=format&fit=crop', // Romantic wedding placeholder
+  slug: 'ravi-weds-meera',
+  backgroundUrl: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=2000&auto=format&fit=crop',
+  contactEmail: 'contact@aryansharma.com',
+  contactPhone: '+91 98765 43210',
+  accentColor: '#C9A84C',
+  accentColorRgb: '201, 168, 76',
+  secondaryColor: '#C2637A',
+  secondaryColorRgb: '194, 99, 122',
+  particleColors: ['#C9A84C', '#F0D080', '#C2637A'],
+  overlayGradient: 'radial-gradient(ellipse at top, rgba(201,168,76,0.15) 0%, transparent 60%), radial-gradient(ellipse at bottom left, rgba(194,99,122,0.2) 0%, transparent 50%)',
 };
 
-export default function InvitationPage() {
+const fadeInUp = {
+  initial: { opacity: 0, y: 30 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true },
+  transition: { duration: 0.8, ease: "easeOut" }
+};
+
+export default function DynamicInvitationPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [event, setEvent] = useState<EventData>(defaultEvent);
+  const [guestMessage, setGuestMessage] = useState('');
+  const [showGuestbook, setShowGuestbook] = useState(false);
+
+  useEffect(() => {
+    const loadEvent = () => {
+      const storedData = localStorage.getItem('liveframe_mock_event');
+      if (storedData) {
+        try {
+          const parsed = JSON.parse(storedData) as EventData;
+          setEvent(parsed);
+        } catch (err) {
+          console.error('Failed to parse simulated event', err);
+        }
+      }
+    };
+    loadEvent();
+    window.addEventListener('storage', loadEvent);
+    return () => window.removeEventListener('storage', loadEvent);
+  }, []);
+
+  useEffect(() => {
+    if (event.title) {
+      document.title = `${event.title} | ${event.eventType || 'Special Event'}`;
+    }
+  }, [event.title, event.eventType]);
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -37,139 +84,208 @@ export default function InvitationPage() {
     setTimeout(() => setCopied(false), 2600);
   };
 
-  return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-near-black">
-      {/* Background System */}
-      <div className="fixed inset-0 z-0">
-        <img 
-          src={mockEvent.backgroundUrl} 
-          alt="Event Background" 
-          className="absolute inset-0 w-full h-full object-cover animate-zoom-bg invitation-bg-layer-1"
-        />
-        <div className="absolute inset-0 invitation-bg-layer-2" />
-        <div className="invitation-grain pointer-events-none" />
-        <ParticleSystem />
-      </div>
+  const themeVars = {
+    '--theme-accent': event.accentColor,
+    '--theme-accent-rgb': event.accentColorRgb,
+    '--theme-secondary': event.secondaryColor,
+    '--theme-secondary-rgb': event.secondaryColorRgb,
+  } as React.CSSProperties;
 
-      {/* Header */}
-      <header className="fixed top-0 w-full z-50 flex items-center justify-between px-6 py-4 transition-all duration-300 bg-[#0d0008]/75 backdrop-blur-md border-b border-gold/20">
-        <span className="font-cinzel text-[13px] text-gold tracking-[0.2em] uppercase">
-          {mockEvent.photographerName}
-        </span>
-        <div className="flex items-center space-x-2">
-          <div className="animate-live-pulse live-pulse-dot" />
-          <span className="font-sans text-[11px] uppercase tracking-[0.25em] text-cream">
-            Live Now
-          </span>
-        </div>
-      </header>
+  let displayDate = event.dateFormatted;
+  if (!displayDate && event.dateRaw) {
+    const d = new Date(event.dateRaw);
+    if (!isNaN(d.getTime())) {
+      displayDate = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
+    }
+  }
+
+  return (
+    <div className="relative min-h-screen w-full overflow-x-hidden bg-near-black" style={themeVars}>
+      <AmbientAudio accentColor={event.accentColor} />
+      
+      {/* Background System */}
+      <div className="fixed inset-0 z-0 bg-[#0d0008]">
+        <motion.img
+          initial={{ scale: 1.1 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 10, repeat: Infinity, repeatType: "reverse", ease: "linear" }}
+          src={event.backgroundUrl}
+          alt="Event Background"
+          className="absolute inset-0 w-full h-full object-cover object-center opacity-80"
+        />
+        <div className="absolute inset-0 bg-black/40" />
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `${event.overlayGradient}, linear-gradient(to bottom, transparent 0%, transparent 60%, rgba(13,0,8,0.7) 100%)`,
+          }}
+        />
+        <div className="invitation-grain pointer-events-none opacity-40" />
+        {event.showPetals && <ParticleSystem colors={event.particleColors} />}
+      </div>
 
       {/* Main Content */}
       <main className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 pt-24 pb-32 text-center">
-        
-        {/* Event Identity Block */}
-        <div className="flex flex-col items-center mb-8 animate-fade-slide-up" style={{ animationDelay: '0.2s' }}>
-          <div className="w-16 h-[1px] bg-gold-light/40 mb-4" />
-          <p className="font-sans text-[10px] uppercase text-warm-gray tracking-[0.3em] mb-4">
+
+        {/* Event Type Badge */}
+        <motion.div {...fadeInUp} className="flex flex-col items-center mb-8">
+          <div className="w-12 h-[2px] mb-6 shadow-[0_0_10px_rgba(var(--theme-accent-rgb),0.5)]" style={{ backgroundColor: `rgba(${event.accentColorRgb}, 0.8)` }} />
+          <p className="font-sans font-bold text-[11px] uppercase text-cream tracking-[0.4em] mb-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
             You Are Cordially Invited
           </p>
-        </div>
+          <p className="font-sans font-bold text-[12px] uppercase tracking-[0.25em] drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]" style={{ color: event.accentColor }}>
+            {event.eventType}
+          </p>
+        </motion.div>
 
-        <h1 className="font-serif italic font-light text-6xl md:text-8xl lg:text-[96px] text-gold-light leading-none mb-4 animate-fade-slide-up" style={{ animationDelay: '0.5s' }}>
-          {mockEvent.title}
-        </h1>
+        <motion.h1 
+          {...fadeInUp}
+          transition={{ ...fadeInUp.transition, delay: 0.2 }}
+          className="font-serif italic font-bold text-5xl sm:text-6xl md:text-8xl lg:text-[96px] leading-[1.1] mb-4 max-w-[90vw] mx-auto break-words" 
+          style={{ color: `rgba(${event.accentColorRgb}, 0.95)`, textShadow: `0 4px 20px rgba(0,0,0,0.5)` }}
+        >
+          {event.title}
+        </motion.h1>
 
-        <p className="font-serif italic text-xl md:text-2xl text-cream/90 mb-10 animate-fade-slide-up" style={{ animationDelay: '0.7s' }}>
-          {mockEvent.tagline}
-        </p>
+        <motion.p 
+          {...fadeInUp}
+          transition={{ ...fadeInUp.transition, delay: 0.4 }}
+          className="font-serif italic font-bold text-lg sm:text-xl md:text-2xl text-cream/95 mb-10 max-w-[90vw] mx-auto"
+        >
+          {event.tagline}
+        </motion.p>
 
-        {/* Date & Time Strip */}
-        <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-4 mb-10 animate-fade-slide-up" style={{ animationDelay: '0.85s' }}>
-          <span className="font-cinzel text-lg md:text-xl text-cream tracking-widest">{mockEvent.dateFormatted}</span>
-          <span className="hidden md:inline text-gold/30">|</span>
-          <span className="font-cinzel text-lg md:text-xl text-cream tracking-widest">{mockEvent.timeFormatted}</span>
-        </div>
+        {/* Date & Time */}
+        <motion.div 
+          {...fadeInUp}
+          transition={{ ...fadeInUp.transition, delay: 0.5 }}
+          className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-4 mb-10"
+        >
+          <span className="font-cinzel font-bold text-lg md:text-xl text-cream tracking-widest">{displayDate}</span>
+          <span className="hidden md:inline" style={{ color: `rgba(${event.accentColorRgb}, 0.5)` }}>|</span>
+          <span className="font-cinzel font-bold text-lg md:text-xl text-cream tracking-widest">{event.timeFormatted}</span>
+        </motion.div>
 
         {/* Countdown */}
-        <div className="mb-12">
-          <CountdownTimer targetDate={mockEvent.dateRaw} />
-        </div>
+        <motion.div 
+          {...fadeInUp}
+          transition={{ ...fadeInUp.transition, delay: 0.6 }}
+          className="mb-12"
+        >
+          <CountdownTimer targetDate={event.dateRaw} accentColor={event.accentColor} accentColorRgb={event.accentColorRgb} />
+        </motion.div>
 
         {/* Watch Live CTA */}
-        <button 
+        <motion.button
+          {...fadeInUp}
+          transition={{ ...fadeInUp.transition, delay: 0.7 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           onClick={() => setIsModalOpen(true)}
-          className="btn-primary rounded-sm px-8 py-4 flex items-center space-x-3 mb-16 animate-fade-slide-up"
-          style={{ animationDelay: '1.15s' }}
+          className="rounded-full px-8 py-4 md:px-10 md:py-5 flex items-center shadow-xl border-2 space-x-2 md:space-x-3 mb-12 relative overflow-hidden transition-all duration-300"
+          style={{
+            background: `linear-gradient(135deg, ${event.accentColor}, ${event.secondaryColor})`,
+            borderColor: 'rgba(255,255,255,0.2)',
+            boxShadow: `0 0 30px rgba(${event.accentColorRgb}, 0.5)`,
+          }}
         >
-          <div className="w-2 h-2 rounded-full bg-red-600 animate-live-pulse" />
-          <span className="font-cinzel text-[13px] uppercase tracking-[0.22em] font-semibold">
+          <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-red-600 animate-live-pulse shadow-[0_0_10px_rgba(220,38,38,0.8)]" />
+          <span className="font-sans font-bold text-[12px] md:text-[14px] uppercase tracking-[0.25em] text-white drop-shadow-md">
             Watch Live Stream
           </span>
-        </button>
-
-        <div className="w-px h-16 bg-gradient-to-b from-gold/30 to-transparent mb-8 animate-fade-slide-up" style={{ animationDelay: '1.3s' }} />
+        </motion.button>
 
         {/* Details Grid */}
-        <DetailGrid 
-          venue={mockEvent.venue}
-          city={mockEvent.city}
-          photographerName={mockEvent.photographerName}
-          streamPlatform={mockEvent.streamPlatform}
-        />
-
-        {/* Invitation Message */}
-        <div className="max-w-2xl mt-16 animate-fade-slide-up" style={{ animationDelay: '1.6s' }}>
-          <p className="font-serif italic text-lg md:text-xl text-cream/80 leading-relaxed text-center">
-            "{mockEvent.bodyMessage}"
-          </p>
+        <div className="mb-16 w-full max-w-xl mx-auto">
+          <DetailGrid
+            venue={event.venue}
+            city={event.city}
+            accentColor={event.accentColor}
+            accentColorRgb={event.accentColorRgb}
+          />
         </div>
 
-        {/* Share Section */}
-        <div className="mt-12 flex space-x-4 animate-fade-slide-up" style={{ animationDelay: '1.75s' }}>
-          <button 
+        {/* Invitation Message */}
+        <motion.div {...fadeInUp} className="max-w-2xl mt-16">
+          <p className="font-serif italic text-lg md:text-xl text-cream/80 leading-relaxed text-center">
+            &ldquo;{event.bodyMessage}&rdquo;
+          </p>
+        </motion.div>
+
+        {/* Action Buttons */}
+        <motion.div {...fadeInUp} className="mt-12 flex flex-wrap justify-center gap-4">
+          <AddToCalendar 
+            title={event.title}
+            description={event.tagline}
+            location={event.venue}
+            startTime={event.dateRaw}
+            accentColor={event.accentColor}
+          />
+          
+          <button
             onClick={handleCopyLink}
-            className="flex items-center space-x-2 px-6 py-3 border border-gold/20 rounded-sm hover:bg-gold/10 transition-colors"
+            className="flex items-center space-x-2 px-6 py-3 rounded-sm hover:bg-white/5 transition-colors"
+            style={{ border: `1px solid rgba(${event.accentColorRgb}, 0.2)` }}
           >
-            <Share2 size={16} className="text-gold" />
+            <Share2 size={16} style={{ color: event.accentColor }} />
             <span className="font-cinzel text-xs text-cream uppercase tracking-widest">
               {copied ? 'Link Copied' : 'Copy Link'}
             </span>
           </button>
-        </div>
+
+          <button
+            onClick={() => setShowGuestbook(!showGuestbook)}
+            className="flex items-center space-x-2 px-6 py-3 rounded-sm hover:bg-white/5 transition-colors"
+            style={{ border: `1px solid rgba(${event.accentColorRgb}, 0.2)` }}
+          >
+            <MessageSquare size={16} style={{ color: event.accentColor }} />
+            <span className="font-cinzel text-xs text-cream uppercase tracking-widest">
+              Leave a Blessing
+            </span>
+          </button>
+        </motion.div>
+
+        {/* Guestbook Section (Mock) */}
+        <AnimatePresence>
+          {showGuestbook && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="w-full max-w-lg mt-12 overflow-hidden"
+            >
+              <div className="bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-sm">
+                <h4 className="font-cinzel text-sm text-gold-light mb-4 uppercase tracking-widest">Guestbook</h4>
+                <div className="relative">
+                  <textarea
+                    value={guestMessage}
+                    onChange={(e) => setGuestMessage(e.target.value)}
+                    placeholder="Write your blessings here..."
+                    className="w-full bg-black/30 border border-white/10 rounded-sm p-4 text-cream text-sm focus:border-gold outline-none h-32 resize-none"
+                  />
+                  <button 
+                    onClick={() => {
+                      alert("Blessing sent! (Mock)");
+                      setGuestMessage('');
+                      setShowGuestbook(false);
+                    }}
+                    className="absolute bottom-4 right-4 p-2 rounded-full hover:bg-white/5"
+                  >
+                    <Send size={18} style={{ color: event.accentColor }} />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
       </main>
 
-      {/* Footer */}
-      <footer className="relative z-10 w-full border-t border-gold/10 bg-near-black/50 py-10 px-4 animate-fade-slide-up" style={{ animationDelay: '1.9s' }}>
-        <div className="max-w-3xl mx-auto flex flex-col md:flex-row items-center justify-between opacity-80 hover:opacity-100 transition-opacity">
-          
-          <div className="flex items-center space-x-4 mb-6 md:mb-0">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gold/40 to-rose/40 border border-gold flex items-center justify-center">
-              <span className="font-cinzel text-cream text-sm tracking-wider">{mockEvent.photographerInitials}</span>
-            </div>
-            <div>
-              <p className="font-cinzel text-sm text-gold-light tracking-[0.15em] uppercase">{mockEvent.photographerName}</p>
-              <p className="font-sans text-[9px] text-gold/60 uppercase tracking-wider">{mockEvent.photographerRole}</p>
-            </div>
-          </div>
-
-          <div className="text-center md:text-right">
-            <p className="font-sans text-[11px] text-cream/35 hover:text-gold transition-colors mb-2">
-              contact@aryansharma.com • +91 98765 43210
-            </p>
-            <p className="font-sans text-[9px] text-white/15 uppercase tracking-widest mt-4">
-              Powered by LiveFrame
-            </p>
-          </div>
-          
-        </div>
-      </footer>
-
       {/* Stream Modal */}
-      <WatchLiveModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        streamEmbedUrl={mockEvent.streamEmbedUrl} 
+      <WatchLiveModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        streamEmbedUrl={event.streamEmbedUrl}
       />
     </div>
   );

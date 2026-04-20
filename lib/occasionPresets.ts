@@ -175,4 +175,5 @@ export interface EventData {
   secondaryColorRgb: string;
   particleColors: string[];
   overlayGradient: string;
+  showPetals: boolean;
 }

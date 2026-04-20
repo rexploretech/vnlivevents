@@ -28,18 +28,26 @@ export default function DetailGrid({
       className="w-full max-w-xl mx-auto px-4"
     >
       <div
-        className="relative group overflow-hidden flex flex-col items-center p-8 md:p-12 rounded-2xl backdrop-blur-xl transition-all duration-500 shadow-2xl"
+        className="relative group overflow-hidden flex flex-col items-center p-10 md:p-14 rounded-3xl backdrop-blur-2xl transition-all duration-500 shadow-[0_20px_50px_rgba(0,0,0,0.3)]"
         style={{
-          backgroundColor: 'rgba(0, 0, 0, 0.4)', // Darker background for better contrast
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          boxShadow: `0 0 40px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(${accentColorRgb}, 0.05)`,
+          backgroundColor: 'rgba(255, 255, 255, 0.05)',
+          border: '1px solid rgba(255, 255, 255, 0.12)',
+          boxShadow: `inset 0 0 80px rgba(255,255,255,0.02), 0 20px 50px rgba(0,0,0,0.4)`,
         }}
       >
+        {/* Refractive Light Effect */}
+        <div 
+          className="absolute -top-[50%] -left-[50%] w-[200%] h-[200%] opacity-20 pointer-events-none rotate-12"
+          style={{
+            background: `linear-gradient(45deg, transparent 45%, rgba(255,255,255,0.1) 50%, transparent 55%)`
+          }}
+        />
+
         {/* Inner Glow/Accent Border */}
         <div 
           className="absolute inset-0 opacity-20 pointer-events-none"
           style={{
-            background: `radial-gradient(circle at center, ${accentColor}33 0%, transparent 80%)`
+            background: `radial-gradient(circle at center, ${accentColor}22 0%, transparent 70%)`
           }}
         />
 

@@ -73,7 +73,7 @@ export default function HomeInvitationPage() {
 
   useEffect(() => {
     if (event.title) {
-      document.title = `${event.title} | ${event.eventType || 'Invitation'}`;
+      document.title = `${event.title} | ${event.eventType || 'Special Event'}`;
     }
   }, [event.title, event.eventType]);
 
@@ -120,7 +120,7 @@ export default function HomeInvitationPage() {
           }}
         />
         <div className="invitation-grain pointer-events-none opacity-40" />
-        <ParticleSystem colors={event.particleColors} />
+        {event.showPetals && <ParticleSystem colors={event.particleColors} />}
       </div>
 
       {/* Main Content */}
@@ -194,15 +194,15 @@ export default function HomeInvitationPage() {
           </span>
         </motion.button>
 
-        <div className="w-px h-16 mb-8" style={{ background: `linear-gradient(to bottom, rgba(${event.accentColorRgb}, 0.3), transparent)` }} />
-
         {/* Details Grid */}
-        <DetailGrid
-          venue={event.venue}
-          city={event.city}
-          accentColor={event.accentColor}
-          accentColorRgb={event.accentColorRgb}
-        />
+        <div className="mb-16 w-full max-w-xl mx-auto">
+          <DetailGrid
+            venue={event.venue}
+            city={event.city}
+            accentColor={event.accentColor}
+            accentColorRgb={event.accentColorRgb}
+          />
+        </div>
 
         {/* Invitation Message */}
         <motion.div {...fadeInUp} className="max-w-2xl mt-16">
