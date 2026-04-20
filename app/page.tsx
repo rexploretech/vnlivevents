@@ -52,6 +52,7 @@ export default function HomeInvitationPage() {
   const [guestMessage, setGuestMessage] = useState('');
   const [showGuestbook, setShowGuestbook] = useState(false);
   const [isLive, setIsLive] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadEvent = () => {
@@ -76,6 +77,7 @@ export default function HomeInvitationPage() {
           setIsLive(true);
         }
       }
+      setIsLoading(false);
     };
     loadEvent();
     window.addEventListener('storage', loadEvent);
@@ -127,14 +129,19 @@ export default function HomeInvitationPage() {
       
       {/* Background System */}
       <div className="fixed inset-0 z-0 bg-[#0d0008]">
-        <motion.img
-          initial={{ scale: 1.1 }}
-          animate={{ scale: 1 }}
-          transition={{ duration: 10, repeat: Infinity, repeatType: "reverse", ease: "linear" }}
-          src={event.backgroundUrl}
-          alt="Event Background"
-          className="absolute inset-0 w-full h-full object-cover object-center opacity-80"
-        />
+        {!isLoading && (
+          <motion.img
+            initial={{ scale: 1.1, opacity: 0 }}
+            animate={{ scale: 1, opacity: 0.8 }}
+            transition={{ 
+              opacity: { duration: 1 },
+              scale: { duration: 10, repeat: Infinity, repeatType: "reverse", ease: "linear" }
+            }}
+            src={event.backgroundUrl}
+            alt="Event Background"
+            className="absolute inset-0 w-full h-full object-cover object-center"
+          />
+        )}
         <div className="absolute inset-0 bg-black/40" />
         <div
           className="absolute inset-0"
@@ -143,11 +150,18 @@ export default function HomeInvitationPage() {
           }}
         />
         <div className="invitation-grain pointer-events-none opacity-40" />
-        {event.showPetals && <ParticleSystem colors={event.particleColors} />}
+        {!isLoading && event.showPetals && <ParticleSystem colors={event.particleColors} />}
       </div>
 
       {/* Main Content */}
-      <main className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 pt-24 pb-32 text-center">
+      <AnimatePresence>
+        {!isLoading && (
+          <motion.main 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1 }}
+            className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 pt-24 pb-32 text-center"
+          >
 
         {/* Event Type Badge */}
         <motion.div {...fadeInUp} className="flex flex-col items-center mb-8">
@@ -321,7 +335,9 @@ export default function HomeInvitationPage() {
           )}
         </AnimatePresence>
 
-      </main>
+          </motion.main>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
