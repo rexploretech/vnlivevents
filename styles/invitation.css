@@ -1,0 +1,84 @@
+@keyframes fadeSlideUp {
+  0% { transform: translateY(22px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.animate-fade-slide-up {
+  opacity: 0;
+  animation: fadeSlideUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes zoomBackground {
+  0% { transform: scale(1.08); }
+  100% { transform: scale(1.0); }
+}
+
+.animate-zoom-bg {
+  transform: scale(1.08);
+  animation: zoomBackground 12s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes livePulse {
+  0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.8); }
+  70% { box-shadow: 0 0 0 6px rgba(220, 38, 38, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+}
+
+.animate-live-pulse {
+  animation: livePulse 1.4s infinite;
+}
+
+.live-pulse-dot {
+  width: 7px;
+  height: 7px;
+  background-color: #dc2626;
+  border-radius: 50%;
+  box-shadow: 0 0 0 rgba(220, 38, 38, 0.4);
+}
+
+.invitation-bg-layer-1 {
+  filter: brightness(0.25) saturate(1.1);
+}
+
+.invitation-bg-layer-2 {
+  /* Dynamic gradient overlay handled inside React component now */
+  display: none; 
+}
+
+.invitation-grain {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  opacity: 0.045;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* Old static particle classes no longer needed */
+.particle-gold { display: none; }
+.particle-rose { display: none; }
+
+@keyframes floatParticle {
+  0% { transform: translateY(100vh) translateX(0) rotate(0deg); opacity: 0; }
+  10% { opacity: 0.8; }
+  90% { opacity: 0.8; }
+  100% { transform: translateY(-20vh) translateX(50px) rotate(360deg); opacity: 0; }
+}
+
+.particle-float {
+  animation: floatParticle linear infinite;
+}
+
+@keyframes buttonFocus {
+  0% { box-shadow: 0 0 10px rgba(var(--theme-accent-rgb, 240, 208, 128), 0.3); transform: scale(1); }
+  50% { box-shadow: 0 0 30px rgba(var(--theme-accent-rgb, 240, 208, 128), 0.7); transform: scale(1.03); }
+  100% { box-shadow: 0 0 10px rgba(var(--theme-accent-rgb, 240, 208, 128), 0.3); transform: scale(1); }
+}
+
+/* Base button animations (colors overridden inline) */
+.btn-primary:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 0 25px rgba(var(--theme-accent-rgb, 240, 208, 128), 0.9) !important;
+  animation: none !important;
+}
+
+/* Old card classes cleaned out because inline styling took over */
+
