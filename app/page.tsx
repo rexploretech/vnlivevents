@@ -1,12 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Share2 } from 'lucide-react';
+import { Share2, MessageSquare, Send } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import ParticleSystem from '@/components/invitation/ParticleSystem';
 import CountdownTimer from '@/components/invitation/CountdownTimer';
 import WatchLiveModal from '@/components/invitation/WatchLiveModal';
 import DetailGrid from '@/components/invitation/DetailGrid';
-import { OCCASION_PRESETS, type EventData } from '@/lib/occasionPresets';
+import AddToCalendar from '@/components/invitation/AddToCalendar';
+import AmbientAudio from '@/components/invitation/AmbientAudio';
+import { type EventData } from '@/lib/occasionPresets';
 
 // Mock event data — will eventually come from Firebase
 const mockEvent: EventData = {
@@ -29,7 +32,6 @@ const mockEvent: EventData = {
   backgroundUrl: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=2000&auto=format&fit=crop',
   contactEmail: 'contact@aryansharma.com',
   contactPhone: '+91 98765 43210',
-  // Theme (from preset)
   accentColor: '#C9A84C',
   accentColorRgb: '201, 168, 76',
   secondaryColor: '#C2637A',
@@ -38,10 +40,19 @@ const mockEvent: EventData = {
   overlayGradient: 'radial-gradient(ellipse at top, rgba(201,168,76,0.15) 0%, transparent 60%), radial-gradient(ellipse at bottom left, rgba(194,99,122,0.2) 0%, transparent 50%)',
 };
 
+const fadeInUp = {
+  initial: { opacity: 0, y: 30 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true },
+  transition: { duration: 0.8, ease: "easeOut" }
+};
+
 export default function HomeInvitationPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [event, setEvent] = useState<EventData>(mockEvent);
+  const [guestMessage, setGuestMessage] = useState('');
+  const [showGuestbook, setShowGuestbook] = useState(false);
 
   useEffect(() => {
     const loadEvent = () => {
@@ -55,24 +66,14 @@ export default function HomeInvitationPage() {
         }
       }
     };
-
-    // Initial load
     loadEvent();
-
-    // Re-sync whenever admin publishes (works cross-tab via storage event)
     window.addEventListener('storage', loadEvent);
     return () => window.removeEventListener('storage', loadEvent);
   }, []);
 
-  // Dynamically update the browser tab title, defeating Next.js strict Metadata hydration
   useEffect(() => {
     if (event.title) {
-      const newTitle = `${event.title} | ${event.eventType || 'Invitation'}`;
-      document.title = newTitle;
-      const timeoutId = setTimeout(() => {
-        document.title = newTitle;
-      }, 150);
-      return () => clearTimeout(timeoutId);
+      document.title = `${event.title} | ${event.eventType || 'Invitation'}`;
     }
   }, [event.title, event.eventType]);
 
@@ -82,7 +83,6 @@ export default function HomeInvitationPage() {
     setTimeout(() => setCopied(false), 2600);
   };
 
-  // Dynamic CSS custom properties driven by the event's theme
   const themeVars = {
     '--theme-accent': event.accentColor,
     '--theme-accent-rgb': event.accentColorRgb,
@@ -90,7 +90,6 @@ export default function HomeInvitationPage() {
     '--theme-secondary-rgb': event.secondaryColorRgb,
   } as React.CSSProperties;
 
-  // Fallback if local storage payload lacks formatted string
   let displayDate = event.dateFormatted;
   if (!displayDate && event.dateRaw) {
     const d = new Date(event.dateRaw);
@@ -99,31 +98,27 @@ export default function HomeInvitationPage() {
     }
   }
 
-  // Show content immediately without waiting for isMounted to avoid blank page
-  // Use default mock event data until localStorage loads
-
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-near-black" style={themeVars}>
+    <div className="relative min-h-screen w-full overflow-x-hidden bg-near-black" style={themeVars}>
+      <AmbientAudio accentColor={event.accentColor} />
+      
       {/* Background System */}
       <div className="fixed inset-0 z-0 bg-[#0d0008]">
-        {/* Full Screen Image Coverage */}
-        <img
+        <motion.img
+          initial={{ scale: 1.1 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 10, repeat: Infinity, repeatType: "reverse", ease: "linear" }}
           src={event.backgroundUrl}
           alt="Event Background"
-          className="absolute inset-0 w-full h-full object-cover object-center animate-zoom-bg opacity-90"
+          className="absolute inset-0 w-full h-full object-cover object-center opacity-80"
         />
-        
-        {/* Layer 3: Legibility Dimming (Decreased severity drastically from 90% combined dim to ~40%) */}
         <div className="absolute inset-0 bg-black/40" />
-
-        {/* Layer 4: Occasion-driven gentle gradient overlay focusing only on styling, dropping the heavy bottom blackout fade to a very soft anchor fade */}
         <div
           className="absolute inset-0"
           style={{
             background: `${event.overlayGradient}, linear-gradient(to bottom, transparent 0%, transparent 60%, rgba(13,0,8,0.7) 100%)`,
           }}
         />
-        
         <div className="invitation-grain pointer-events-none opacity-40" />
         <ParticleSystem colors={event.particleColors} />
       </div>
@@ -132,75 +127,104 @@ export default function HomeInvitationPage() {
       <main className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 pt-24 pb-32 text-center">
 
         {/* Event Type Badge */}
-        <div className="flex flex-col items-center mb-8 animate-fade-slide-up" style={{ animationDelay: '0.2s' }}>
+        <motion.div {...fadeInUp} className="flex flex-col items-center mb-8">
           <div className="w-16 h-[1px] mb-4" style={{ backgroundColor: `rgba(${event.accentColorRgb}, 0.4)` }} />
-          <p className="font-sans font-bold text-[10px] uppercase text-warm-gray tracking-[0.3em] mb-1 drop-shadow-sm">
+          <p className="font-sans font-bold text-[10px] uppercase text-warm-gray tracking-[0.3em] mb-1">
             You Are Cordially Invited
           </p>
-          <p className="font-sans font-bold text-[11px] uppercase tracking-[0.25em] mt-1 drop-shadow-md" style={{ color: `rgba(${event.accentColorRgb}, 0.8)` }}>
+          <p className="font-sans font-bold text-[11px] uppercase tracking-[0.25em] mt-1" style={{ color: `rgba(${event.accentColorRgb}, 0.8)` }}>
             {event.eventType}
           </p>
-        </div>
+        </motion.div>
 
-        <h1 className="font-serif italic font-bold text-5xl sm:text-6xl md:text-8xl lg:text-[96px] leading-[1.1] mb-4 animate-fade-slide-up max-w-[90vw] mx-auto break-words drop-shadow-2xl" style={{ animationDelay: '0.5s', color: `rgba(${event.accentColorRgb}, 0.95)`, textShadow: `0 4px 20px rgba(0,0,0,0.5)` }}>
+        <motion.h1 
+          {...fadeInUp}
+          transition={{ ...fadeInUp.transition, delay: 0.2 }}
+          className="font-serif italic font-bold text-5xl sm:text-6xl md:text-8xl lg:text-[96px] leading-[1.1] mb-4 max-w-[90vw] mx-auto break-words" 
+          style={{ color: `rgba(${event.accentColorRgb}, 0.95)`, textShadow: `0 4px 20px rgba(0,0,0,0.5)` }}
+        >
           {event.title}
-        </h1>
+        </motion.h1>
 
-        <p className="font-serif italic font-bold text-lg sm:text-xl md:text-2xl text-cream/95 mb-10 animate-fade-slide-up max-w-[90vw] mx-auto drop-shadow-xl" style={{ animationDelay: '0.7s', textShadow: `0 2px 10px rgba(0,0,0,0.6)` }}>
+        <motion.p 
+          {...fadeInUp}
+          transition={{ ...fadeInUp.transition, delay: 0.4 }}
+          className="font-serif italic font-bold text-lg sm:text-xl md:text-2xl text-cream/95 mb-10 max-w-[90vw] mx-auto"
+        >
           {event.tagline}
-        </p>
+        </motion.p>
 
         {/* Date & Time */}
-        <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-4 mb-10 animate-fade-slide-up" style={{ animationDelay: '0.85s' }}>
-          <span className="font-cinzel font-bold text-lg md:text-xl text-cream tracking-widest drop-shadow-lg" style={{ textShadow: `0 2px 10px rgba(0,0,0,0.6)` }}>{displayDate}</span>
+        <motion.div 
+          {...fadeInUp}
+          transition={{ ...fadeInUp.transition, delay: 0.5 }}
+          className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-4 mb-10"
+        >
+          <span className="font-cinzel font-bold text-lg md:text-xl text-cream tracking-widest">{displayDate}</span>
           <span className="hidden md:inline" style={{ color: `rgba(${event.accentColorRgb}, 0.5)` }}>|</span>
-          <span className="font-cinzel font-bold text-lg md:text-xl text-cream tracking-widest drop-shadow-lg" style={{ textShadow: `0 2px 10px rgba(0,0,0,0.6)` }}>{event.timeFormatted}</span>
-        </div>
+          <span className="font-cinzel font-bold text-lg md:text-xl text-cream tracking-widest">{event.timeFormatted}</span>
+        </motion.div>
 
         {/* Countdown */}
-        <div className="mb-12">
+        <motion.div 
+          {...fadeInUp}
+          transition={{ ...fadeInUp.transition, delay: 0.6 }}
+          className="mb-12"
+        >
           <CountdownTimer targetDate={event.dateRaw} accentColor={event.accentColor} accentColorRgb={event.accentColorRgb} />
-        </div>
+        </motion.div>
 
-        {/* Watch Live CTA — themed */}
-        <button
+        {/* Watch Live CTA */}
+        <motion.button
+          {...fadeInUp}
+          transition={{ ...fadeInUp.transition, delay: 0.7 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           onClick={() => setIsModalOpen(true)}
-          className="rounded-full px-10 py-5 md:px-12 md:py-6 flex items-center shadow-xl border-2 space-x-3 md:space-x-4 mb-16 animate-fade-slide-up relative overflow-hidden transition-all duration-300 hover:scale-105"
+          className="rounded-full px-10 py-5 md:px-12 md:py-6 flex items-center shadow-xl border-2 space-x-3 md:space-x-4 mb-16 relative overflow-hidden transition-all duration-300"
           style={{
-            animationDelay: '1.15s',
             background: `linear-gradient(135deg, ${event.accentColor}, ${event.secondaryColor})`,
             borderColor: 'rgba(255,255,255,0.2)',
             boxShadow: `0 0 30px rgba(${event.accentColorRgb}, 0.5)`,
-            animation: 'buttonFocus 2.5s infinite ease-in-out',
           }}
         >
           <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-red-600 animate-live-pulse shadow-[0_0_10px_rgba(220,38,38,0.8)]" />
           <span className="font-sans font-bold text-[14px] md:text-[16px] uppercase tracking-[0.25em] text-white drop-shadow-md">
             Watch Live Stream
           </span>
-        </button>
+        </motion.button>
 
-        <div className="w-px h-16 mb-8 animate-fade-slide-up" style={{ animationDelay: '1.3s', background: `linear-gradient(to bottom, rgba(${event.accentColorRgb}, 0.3), transparent)` }} />
+        <div className="w-px h-16 mb-8" style={{ background: `linear-gradient(to bottom, rgba(${event.accentColorRgb}, 0.3), transparent)` }} />
 
         {/* Details Grid */}
-        <DetailGrid
-          venue={event.venue}
-          city={event.city}
-          photographerName={event.photographerName}
-          streamPlatform={event.streamPlatform}
-          accentColor={event.accentColor}
-          accentColorRgb={event.accentColorRgb}
-        />
+        <motion.div {...fadeInUp}>
+          <DetailGrid
+            venue={event.venue}
+            city={event.city}
+            photographerName={event.photographerName}
+            streamPlatform={event.streamPlatform}
+            accentColor={event.accentColor}
+            accentColorRgb={event.accentColorRgb}
+          />
+        </motion.div>
 
         {/* Invitation Message */}
-        <div className="max-w-2xl mt-16 animate-fade-slide-up" style={{ animationDelay: '1.6s' }}>
+        <motion.div {...fadeInUp} className="max-w-2xl mt-16">
           <p className="font-serif italic text-lg md:text-xl text-cream/80 leading-relaxed text-center">
             &ldquo;{event.bodyMessage}&rdquo;
           </p>
-        </div>
+        </motion.div>
 
-        {/* Share */}
-        <div className="mt-12 flex space-x-4 animate-fade-slide-up" style={{ animationDelay: '1.75s' }}>
+        {/* Action Buttons */}
+        <motion.div {...fadeInUp} className="mt-12 flex flex-wrap justify-center gap-4">
+          <AddToCalendar 
+            title={event.title}
+            description={event.tagline}
+            location={event.venue}
+            startTime={event.dateRaw}
+            accentColor={event.accentColor}
+          />
+          
           <button
             onClick={handleCopyLink}
             className="flex items-center space-x-2 px-6 py-3 rounded-sm hover:bg-white/5 transition-colors"
@@ -211,11 +235,54 @@ export default function HomeInvitationPage() {
               {copied ? 'Link Copied' : 'Copy Link'}
             </span>
           </button>
-        </div>
+
+          <button
+            onClick={() => setShowGuestbook(!showGuestbook)}
+            className="flex items-center space-x-2 px-6 py-3 rounded-sm hover:bg-white/5 transition-colors"
+            style={{ border: `1px solid rgba(${event.accentColorRgb}, 0.2)` }}
+          >
+            <MessageSquare size={16} style={{ color: event.accentColor }} />
+            <span className="font-cinzel text-xs text-cream uppercase tracking-widest">
+              Leave a Blessing
+            </span>
+          </button>
+        </motion.div>
+
+        {/* Guestbook Section (Mock) */}
+        <AnimatePresence>
+          {showGuestbook && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="w-full max-w-lg mt-12 overflow-hidden"
+            >
+              <div className="bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-sm">
+                <h4 className="font-cinzel text-sm text-gold-light mb-4 uppercase tracking-widest">Guestbook</h4>
+                <div className="relative">
+                  <textarea
+                    value={guestMessage}
+                    onChange={(e) => setGuestMessage(e.target.value)}
+                    placeholder="Write your blessings here..."
+                    className="w-full bg-black/30 border border-white/10 rounded-sm p-4 text-cream text-sm focus:border-gold outline-none h-32 resize-none"
+                  />
+                  <button 
+                    onClick={() => {
+                      alert("Blessing sent! (Mock)");
+                      setGuestMessage('');
+                      setShowGuestbook(false);
+                    }}
+                    className="absolute bottom-4 right-4 p-2 rounded-full hover:bg-white/5"
+                  >
+                    <Send size={18} style={{ color: event.accentColor }} />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
       </main>
-
-
 
       {/* Stream Modal */}
       <WatchLiveModal

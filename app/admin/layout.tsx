@@ -13,6 +13,10 @@ export default function AdminLayout({
         <h1 className="font-cinzel text-gold text-2xl mb-12 uppercase tracking-wide">LiveFrame</h1>
         
         <nav className="flex-1 space-y-2">
+          <Link href="/admin/events" className="flex items-center space-x-3 p-3 rounded-md hover:bg-gold/10 text-cream/70 hover:text-gold transition-colors">
+            <Settings size={18} />
+            <span className="font-sans text-sm tracking-wide">All Events</span>
+          </Link>
           <Link href="/admin/events/new" className="flex items-center space-x-3 p-3 rounded-md bg-gold/10 text-gold hover:bg-gold/20 transition-colors">
             <Plus size={18} />
             <span className="font-sans text-sm tracking-wide">Create Event</span>
