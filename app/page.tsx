@@ -16,20 +16,22 @@ const mockEvent: EventData = {
   photographerName: 'Aryan Sharma',
   photographerRole: 'Professional Cinematographer',
   photographerInitials: 'AS',
-  title: 'Ravi & Meera',
-  eventType: 'Wedding Ceremony',
+  title: 'Mr Bean LIVE 🔴',
+  eventType: 'Watch All Episodes - Animated Mr Bean',
+  // Uncomment the line below and comment the static date to test the countdown:
+  // dateRaw: new Date(Date.now() + 10000).toISOString(),
   dateRaw: '2020-05-15T09:00:00Z',
-  dateFormatted: '15 MAY 2026',
-  timeFormatted: '09:00 AM IST',
-  tagline: 'Two souls, one beautiful journey.',
-  bodyMessage: 'We solicit your gracious virtual presence as we embark on this beautiful journey of togetherness. Join us from wherever you are to celebrate our love and bless us.',
-  venue: 'Lotus Garden Banquet Hall',
-  city: 'Mumbai, Maharashtra',
+  dateFormatted: 'LIVE NOW',
+  timeFormatted: '24/7',
+  tagline: 'എല്ലാ എപ്പിസോഡുകളും കാണൂ',
+  bodyMessage: 'Welcome to the 24/7 Mr Bean Live Stream! Enjoy all episodes of Animated Mr Bean.',
+  venue: 'YouTube',
+  city: 'Global',
   streamPlatform: 'YouTube Live',
-  streamEmbedUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-  slug: 'ravi-weds-meera',
+  streamEmbedUrl: 'https://www.youtube.com/embed/06dm2HAebC0',
+  slug: 'mr-bean-live',
   backgroundUrl: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=2000&auto=format&fit=crop',
-  contactEmail: 'contact@aryansharma.com',
+  contactEmail: 'contact@example.com',
   contactPhone: '+91 98765 43210',
   accentColor: '#C9A84C',
   accentColorRgb: '201, 168, 76',
@@ -57,25 +59,40 @@ export default function HomeInvitationPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const getEmbedUrlInfo = (url: string) => {
+  const getEmbedUrlInfo = (inputUrl: string) => {
     let videoId = '';
-    let embedUrl = url;
+    let embedUrl = inputUrl;
+    
     try {
-      if (url.includes('youtube.com/watch?v=')) {
-        const urlObj = new URL(url);
+      // If user pasted an entire iframe string, extract the src attribute
+      if (inputUrl.includes('<iframe')) {
+        const srcMatch = inputUrl.match(/src=["'](.*?)["']/);
+        if (srcMatch && srcMatch[1]) {
+          embedUrl = srcMatch[1];
+        }
+      }
+
+      if (embedUrl.includes('youtube.com/watch?v=')) {
+        const urlObj = new URL(embedUrl);
         videoId = urlObj.searchParams.get('v') || '';
         if (videoId) embedUrl = `https://www.youtube.com/embed/${videoId}`;
-      } else if (url.includes('youtu.be/')) {
-        videoId = url.split('youtu.be/')[1].split('?')[0];
-        embedUrl = `https://www.youtube.com/embed/${videoId}`;
-      } else if (url.includes('youtube.com/embed/')) {
-        videoId = url.split('youtube.com/embed/')[1].split('?')[0];
+      } else if (embedUrl.includes('youtu.be/')) {
+        videoId = embedUrl.split('youtu.be/')[1].split('?')[0].split('/')[0];
+        if (videoId) embedUrl = `https://www.youtube.com/embed/${videoId}`;
+      } else if (embedUrl.includes('youtube.com/embed/')) {
+        videoId = embedUrl.split('youtube.com/embed/')[1].split('?')[0].split('/')[0];
+        if (videoId) embedUrl = `https://www.youtube.com/embed/${videoId}`;
       }
     } catch (err) {}
-    return { embedUrl, videoId };
+    
+    // Always return a clean embed URL if we have a videoId
+    const finalEmbedUrl = videoId ? `https://www.youtube.com/embed/${videoId}` : embedUrl;
+    const watchUrl = videoId ? `https://www.youtube.com/watch?v=${videoId}` : embedUrl;
+
+    return { embedUrl: finalEmbedUrl, videoId, watchUrl };
   };
 
-  const { embedUrl: safeEmbedUrl, videoId } = getEmbedUrlInfo(event.streamEmbedUrl);
+  const { embedUrl: safeEmbedUrl, videoId, watchUrl } = getEmbedUrlInfo(event.streamEmbedUrl);
   const ytThumbnail = videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : 'https://images.unsplash.com/photo-1540656041793-27083161304f?w=800&q=80';
   const displayThumbnail = event.useCustomThumbnail ? event.backgroundUrl : ytThumbnail;
 
@@ -246,7 +263,10 @@ export default function HomeInvitationPage() {
                   targetDate={event.dateRaw} 
                   accentColor={event.accentColor} 
                   accentColorRgb={event.accentColorRgb}
-                  onComplete={() => setIsLive(true)} 
+                  onComplete={() => {
+                    setIsLive(true);
+                    setIsPlaying(true);
+                  }} 
                 />
               </motion.div>
             ) : (
@@ -289,6 +309,7 @@ export default function HomeInvitationPage() {
                       src={`${safeEmbedUrl}${safeEmbedUrl.includes('?') ? '&' : '?'}autoplay=1&mute=0&rel=0`}
                       title="Live Stream"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      referrerPolicy="strict-origin-when-cross-origin"
                       allowFullScreen
                       className="absolute inset-0 w-full h-full border-0 animate-in fade-in duration-500 bg-black"
                     />
@@ -298,10 +319,7 @@ export default function HomeInvitationPage() {
                 {/* External Player Action */}
                 <div className="flex flex-wrap justify-center gap-4 pt-4">
                   <motion.a
-                    href={event.streamEmbedUrl.includes('youtube.com/embed/') 
-                      ? event.streamEmbedUrl.replace('youtube.com/embed/', 'youtube.com/watch?v=')
-                      : event.streamEmbedUrl
-                    }
+                    href={watchUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     whileHover={{ scale: 1.05, y: -2 }}
