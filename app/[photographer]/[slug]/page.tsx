@@ -9,6 +9,9 @@ import DetailGrid from '@/components/invitation/DetailGrid';
 import AddToCalendar from '@/components/invitation/AddToCalendar';
 import AmbientAudio from '@/components/invitation/AmbientAudio';
 import { type EventData } from '@/lib/occasionPresets';
+import { db } from '@/lib/firebase/config';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { useParams } from 'next/navigation';
 
 // This dynamic page will eventually fetch from Firebase based on params
 // For now, we sync with the same localStorage mock as the home page for demo purposes
@@ -38,16 +41,18 @@ const defaultEvent: EventData = {
   secondaryColorRgb: '194, 99, 122',
   particleColors: ['#C9A84C', '#F0D080', '#C2637A'],
   overlayGradient: 'radial-gradient(ellipse at top, rgba(201,168,76,0.15) 0%, transparent 60%), radial-gradient(ellipse at bottom left, rgba(194,99,122,0.2) 0%, transparent 50%)',
+  showPetals: true,
 };
 
 const fadeInUp = {
   initial: { opacity: 0, y: 30 },
   whileInView: { opacity: 1, y: 0 },
   viewport: { once: true },
-  transition: { duration: 0.8, ease: "easeOut" }
+  transition: { duration: 0.8, ease: "easeOut" as const }
 };
 
 export default function DynamicInvitationPage() {
+  const params = useParams();
   const [copied, setCopied] = useState(false);
   const [event, setEvent] = useState<EventData>(defaultEvent);
   const [guestMessage, setGuestMessage] = useState('');
@@ -56,28 +61,31 @@ export default function DynamicInvitationPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const loadEvent = () => {
-      const storedData = localStorage.getItem('liveframe_mock_event');
-      if (storedData) {
-        try {
-          const parsed = JSON.parse(storedData) as EventData;
+    const loadEvent = async () => {
+      if (!params?.slug) return;
+      
+      try {
+        const q = query(collection(db, 'events'), where('slug', '==', params.slug));
+        const querySnapshot = await getDocs(q);
+        
+        if (!querySnapshot.empty) {
+          const parsed = querySnapshot.docs[0].data() as EventData;
           setEvent(parsed);
           
-          // Check if already live based on initial load
           const target = new Date(parsed.dateRaw);
           if (target.getTime() <= Date.now()) {
             setIsLive(true);
           }
-        } catch (err) {
-          console.error('Failed to parse simulated event', err);
+        } else {
+          console.error('Event not found');
         }
+      } catch (err) {
+        console.error('Failed to fetch event from Firebase', err);
       }
       setIsLoading(false);
     };
     loadEvent();
-    window.addEventListener('storage', loadEvent);
-    return () => window.removeEventListener('storage', loadEvent);
-  }, []);
+  }, [params?.slug]);
 
   useEffect(() => {
     if (event.title) {

@@ -1,15 +1,31 @@
 'use client';
 
-import { Settings, Plus, Menu, X } from 'lucide-react';
+import { Settings, Plus, Menu, X, LogOut } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { AuthProvider, useAuth } from '@/lib/hooks/useAuth';
+import { usePathname, useRouter } from 'next/navigation';
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { user, loading, logOut } = useAuth();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user && pathname !== '/admin/login') {
+      router.push('/admin/login');
+    }
+  }, [user, loading, pathname, router]);
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center bg-[#120a10] text-gold">Loading...</div>;
+  }
+
+  // If unauthenticated and on login page, just show the login page without sidebar
+  if (!user || pathname === '/admin/login') {
+    return <>{children}</>;
+  }
 
   return (
     <div className="flex min-h-screen bg-[#120a10]">
@@ -59,9 +75,13 @@ export default function AdminLayout({
         </nav>
         
         <div className="mt-auto border-t border-gold/10 pt-6">
-          <button className="flex items-center space-x-3 p-3 rounded-md hover:bg-gold/10 text-cream/70 hover:text-gold transition-colors w-full text-left">
+          <button className="flex items-center space-x-3 p-3 rounded-md hover:bg-gold/10 text-cream/70 hover:text-gold transition-colors w-full text-left mb-2">
             <Settings size={18} />
             <span className="font-sans text-sm tracking-wide">Global Settings</span>
+          </button>
+          <button onClick={logOut} className="flex items-center space-x-3 p-3 rounded-md hover:bg-red-900/30 text-cream/70 hover:text-red-400 transition-colors w-full text-left">
+            <LogOut size={18} />
+            <span className="font-sans text-sm tracking-wide">Sign Out</span>
           </button>
         </div>
       </aside>
@@ -73,5 +93,17 @@ export default function AdminLayout({
         </div>
       </main>
     </div>
+  );
+}
+
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <AuthProvider>
+      <AdminLayoutInner>{children}</AdminLayoutInner>
+    </AuthProvider>
   );
 }

@@ -4,28 +4,51 @@ import { useState, useEffect } from 'react';
 import { Edit2, Eye, Trash2, ExternalLink, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import { type EventData } from '@/lib/occasionPresets';
+import { db } from '@/lib/firebase/config';
+import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
+
+interface EventWithId extends EventData {
+  id: string;
+}
 
 export default function EventsListPage() {
-  const [events, setEvents] = useState<EventData[]>([]);
+  const [events, setEvents] = useState<EventWithId[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // For now, we only have one event in localStorage
-    const saved = localStorage.getItem('liveframe_mock_event');
-    if (saved) {
+    const fetchEvents = async () => {
       try {
-        setEvents([JSON.parse(saved)]);
-      } catch (e) {
-        console.error('Failed to parse events');
+        const querySnapshot = await getDocs(collection(db, 'events'));
+        const eventsList: EventWithId[] = [];
+        querySnapshot.forEach((doc) => {
+          eventsList.push({ id: doc.id, ...doc.data() } as EventWithId);
+        });
+        setEvents(eventsList);
+      } catch (error) {
+        console.error("Error fetching events: ", error);
+      } finally {
+        setLoading(false);
       }
-    }
+    };
+
+    fetchEvents();
   }, []);
 
-  const deleteEvent = () => {
+  const deleteEvent = async (id: string) => {
     if (confirm('Are you sure you want to delete this event? This cannot be undone.')) {
-      localStorage.removeItem('liveframe_mock_event');
-      setEvents([]);
+      try {
+        await deleteDoc(doc(db, 'events', id));
+        setEvents(events.filter(e => e.id !== id));
+      } catch (error) {
+        console.error("Error deleting event: ", error);
+        alert("Failed to delete event.");
+      }
     }
   };
+
+  if (loading) {
+    return <div className="text-gold font-cinzel text-center py-12">Loading events...</div>;
+  }
 
   return (
     <div className="space-y-8">
@@ -48,13 +71,13 @@ export default function EventsListPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4">
-          {events.map((event, idx) => (
+          {events.map((event) => (
             <div 
-              key={idx}
+              key={event.id}
               className="bg-[#1a0a14] border border-gold/10 p-6 rounded-sm flex flex-col md:flex-row items-center justify-between group hover:border-gold/30 transition-all"
             >
               <div className="flex items-center space-x-6 mb-4 md:mb-0">
-                <div className="w-20 h-20 rounded-sm overflow-hidden border border-gold/20 relative">
+                <div className="w-20 h-20 rounded-sm overflow-hidden border border-gold/20 relative flex-shrink-0">
                   <img src={event.backgroundUrl} alt="" className="w-full h-full object-cover opacity-60" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
                 </div>
@@ -75,7 +98,7 @@ export default function EventsListPage() {
 
               <div className="flex items-center space-x-2">
                 <Link 
-                  href="/" 
+                  href={`/events/${event.slug}`} 
                   target="_blank"
                   className="p-3 rounded-sm border border-gold/10 text-cream/60 hover:text-gold hover:bg-gold/5 transition-all"
                   title="View Live"
@@ -83,14 +106,14 @@ export default function EventsListPage() {
                   <Eye size={18} />
                 </Link>
                 <Link 
-                  href="/admin/events/new"
+                  href={`/admin/events/edit/${event.id}`}
                   className="p-3 rounded-sm border border-gold/10 text-cream/60 hover:text-gold hover:bg-gold/5 transition-all"
                   title="Edit"
                 >
                   <Edit2 size={18} />
                 </Link>
                 <button 
-                  onClick={deleteEvent}
+                  onClick={() => deleteEvent(event.id)}
                   className="p-3 rounded-sm border border-gold/10 text-cream/60 hover:text-red-400 hover:bg-red-400/5 transition-all"
                   title="Delete"
                 >

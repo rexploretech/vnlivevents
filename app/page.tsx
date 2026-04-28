@@ -9,6 +9,8 @@ import DetailGrid from '@/components/invitation/DetailGrid';
 import AddToCalendar from '@/components/invitation/AddToCalendar';
 import AmbientAudio from '@/components/invitation/AmbientAudio';
 import { type EventData } from '@/lib/occasionPresets';
+import { db } from '@/lib/firebase/config';
+import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 
 // Mock event data — will eventually come from Firebase
 const mockEvent: EventData = {
@@ -97,23 +99,37 @@ export default function HomeInvitationPage() {
   const displayThumbnail = event.useCustomThumbnail ? event.backgroundUrl : ytThumbnail;
 
   useEffect(() => {
-    const loadEvent = () => {
-      const storedData = localStorage.getItem('liveframe_mock_event');
-      if (storedData) {
+    const fetchLatestEvent = async () => {
+      try {
+        // Since we didn't have createdAt on some old tests, we'll try to query without orderBy if it fails, or just fetch all and pick one
+        // But let's try with orderBy first.
+        let q = query(collection(db, 'events'), orderBy('createdAt', 'desc'), limit(1));
+        let querySnapshot;
         try {
-          const parsed = JSON.parse(storedData) as EventData;
-          setEvent(parsed);
-          
-          // Check if already live based on initial load
-          const target = new Date(parsed.dateRaw);
+          querySnapshot = await getDocs(q);
+        } catch (idxErr: any) {
+          // If index is missing or query fails, just get any event
+          q = query(collection(db, 'events'), limit(1));
+          querySnapshot = await getDocs(q);
+        }
+        
+        if (!querySnapshot.empty) {
+          const latestEvent = querySnapshot.docs[0].data() as EventData;
+          setEvent(latestEvent);
+          const target = new Date(latestEvent.dateRaw);
           if (target.getTime() <= Date.now()) {
             setIsLive(true);
           }
-        } catch (err) {
-          console.error('Failed to parse simulated event', err);
+        } else {
+          // Fallback to mockEvent if no events in DB
+          const target = new Date(mockEvent.dateRaw);
+          if (target.getTime() <= Date.now()) {
+            setIsLive(true);
+          }
         }
-      } else {
-        // Initial load check for default mockEvent
+      } catch (e) {
+        console.error("Failed to load latest event:", e);
+        // Fallback to mockEvent
         const target = new Date(mockEvent.dateRaw);
         if (target.getTime() <= Date.now()) {
           setIsLive(true);
@@ -121,9 +137,8 @@ export default function HomeInvitationPage() {
       }
       setIsLoading(false);
     };
-    loadEvent();
-    window.addEventListener('storage', loadEvent);
-    return () => window.removeEventListener('storage', loadEvent);
+
+    fetchLatestEvent();
   }, []);
 
   useEffect(() => {

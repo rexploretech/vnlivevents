@@ -4,6 +4,10 @@ import { useState, useEffect } from 'react';
 import { Upload, Eye, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { OCCASION_PRESETS, type OccasionType, type OccasionPreset } from '@/lib/occasionPresets';
+import { db, storage } from '@/lib/firebase/config';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { useRouter } from 'next/navigation';
 
 function hexToRgbStr(hex: string) {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -13,9 +17,12 @@ function hexToRgbStr(hex: string) {
 }
 
 export default function NewEventPage() {
+  const router = useRouter();
   const [occasionType, setOccasionType] = useState<OccasionType>('wedding');
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageUrl, setImageUrl] = useState('');  
+  const [isPublishing, setIsPublishing] = useState(false);
 
   const preset: OccasionPreset = OCCASION_PRESETS[occasionType];
 
@@ -41,40 +48,7 @@ export default function NewEventPage() {
   });
 
   useEffect(() => {
-    const saved = localStorage.getItem('liveframe_mock_event');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (parsed) {
-          if (parsed.occasionType) setOccasionType(parsed.occasionType);
-          if (parsed.backgroundUrl && !parsed.backgroundUrl.includes('unsplash.com')) {
-            setPreviewImage(parsed.backgroundUrl);
-          }
-          setFormData({
-            title: parsed.title || '',
-            slug: parsed.slug || '',
-            eventType: parsed.eventType || '',
-            dateRaw: parsed.dateRaw || '',
-            timeFormatted: parsed.timeFormatted || '',
-            venue: parsed.venue || '',
-            city: parsed.city || '',
-            streamPlatform: parsed.streamPlatform || 'YouTube Live',
-            streamEmbedUrl: parsed.streamEmbedUrl || '',
-            tagline: parsed.tagline || '',
-            bodyMessage: parsed.bodyMessage || '',
-            photographerName: parsed.photographerName || '',
-            photographerRole: parsed.photographerRole || '',
-            contactEmail: parsed.contactEmail || '',
-            contactPhone: parsed.contactPhone || '',
-            accentColor: parsed.accentColor || OCCASION_PRESETS[parsed.occasionType as OccasionType || 'wedding'].accentColor,
-            secondaryColor: parsed.secondaryColor || OCCASION_PRESETS[parsed.occasionType as OccasionType || 'wedding'].secondaryColor,
-            showPetals: parsed.showPetals !== undefined ? parsed.showPetals : true,
-          });
-        }
-      } catch (e) {
-        console.error('Failed to parse saved admin mock data.');
-      }
-    }
+    // Optionally load draft from local storage here if needed in future
   }, []);
 
   const handleOccasionChange = (type: OccasionType) => {
@@ -98,6 +72,7 @@ export default function NewEventPage() {
     const file = e.target.files?.[0];
     if (file) {
       setImageFile(file);
+      setImageUrl(''); // clear URL if file is chosen
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreviewImage(reader.result as string);
@@ -106,7 +81,24 @@ export default function NewEventPage() {
     }
   };
 
-  const handlePublish = () => {
+  const handleImageUrlChange = (url: string) => {
+    setImageUrl(url);
+    if (url) {
+      setImageFile(null);  // clear file if URL is typed
+      setPreviewImage(url);
+    } else {
+      setPreviewImage(null);
+    }
+  };
+
+  const handlePublish = async () => {
+    if (!formData.title) {
+      alert("Please enter a title before publishing.");
+      return;
+    }
+    
+    setIsPublishing(true);
+    
     const accentRgb = hexToRgbStr(formData.accentColor);
     const secondaryRgb = hexToRgbStr(formData.secondaryColor);
 
@@ -135,25 +127,48 @@ export default function NewEventPage() {
       dateTimeForCountdown = `${formData.dateRaw}T00:00:00`;
     }
 
-    const fullEvent = {
-      ...formData,
-      dateRaw: dateTimeForCountdown, // Store combined datetime for countdown
-      dateFormatted,
-      photographerInitials: initials,
-      occasionType,
-      backgroundUrl: previewImage || 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=2000&auto=format&fit=crop',
-      accentColorRgb: accentRgb,
-      secondaryColorRgb: secondaryRgb,
-      // Dynamic overlay based on custom chosen colors
-      overlayGradient: `radial-gradient(ellipse at top, rgba(${accentRgb},0.18) 0%, transparent 60%), radial-gradient(ellipse at bottom left, rgba(${secondaryRgb},0.15) 0%, transparent 50%)`,
-      particleColors: [formData.accentColor, formData.secondaryColor, preset.particleColors[2] || '#ffffff'],
-    };
+    let finalBackgroundUrl = 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=2000&auto=format&fit=crop';
 
     try {
-      localStorage.setItem('liveframe_mock_event', JSON.stringify(fullEvent));
-      alert('Success! Event published to Local Storage. Click "Preview" to see your custom site!');
-    } catch (e) {
-      alert('Publish failed. Your background image might be too large for offline preview mode (Local Storage 5MB limit). Try a smaller image.');
+      if (imageUrl) {
+        // Use the pasted URL directly — no CORS issues
+        finalBackgroundUrl = imageUrl;
+      } else if (imageFile) {
+        const fileRef = ref(storage, `events/${Date.now()}_${imageFile.name}`);
+        await uploadBytes(fileRef, imageFile);
+        finalBackgroundUrl = await getDownloadURL(fileRef);
+      }
+
+      const generatedSlug = formData.slug || formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+
+      const fullEvent = {
+        ...formData,
+        slug: generatedSlug,
+        dateRaw: dateTimeForCountdown, // Store combined datetime for countdown
+        dateFormatted,
+        photographerInitials: initials,
+        occasionType,
+        backgroundUrl: finalBackgroundUrl,
+        accentColorRgb: accentRgb,
+        secondaryColorRgb: secondaryRgb,
+        // Dynamic overlay based on custom chosen colors
+        overlayGradient: `radial-gradient(ellipse at top, rgba(${accentRgb},0.18) 0%, transparent 60%), radial-gradient(ellipse at bottom left, rgba(${secondaryRgb},0.15) 0%, transparent 50%)`,
+        particleColors: [formData.accentColor, formData.secondaryColor, preset.particleColors[2] || '#ffffff'],
+        createdAt: serverTimestamp(),
+      };
+
+      await addDoc(collection(db, 'events'), fullEvent);
+      alert('Success! Event published to database.');
+      router.push('/admin/events');
+    } catch (e: any) {
+      if (e.code === 'permission-denied') {
+        alert("Publish failed. You don't have permission to write to Firestore or Storage. Please check your Firebase Security Rules.");
+      } else {
+        alert('Publish failed. Please check console for details.');
+      }
+      console.error(e);
+    } finally {
+      setIsPublishing(false);
     }
   };
 
@@ -175,9 +190,10 @@ export default function NewEventPage() {
           </Link>
           <button 
             onClick={handlePublish}
-            className="flex-1 md:flex-none bg-gold text-[#1a0a14] font-cinzel px-4 md:px-6 py-2.5 rounded-sm uppercase tracking-wider text-xs md:text-sm hover:bg-gold-light transition-colors"
+            disabled={isPublishing}
+            className="flex-1 md:flex-none bg-gold text-[#1a0a14] font-cinzel px-4 md:px-6 py-2.5 rounded-sm uppercase tracking-wider text-xs md:text-sm hover:bg-gold-light transition-colors disabled:opacity-50"
           >
-            Publish Event
+            {isPublishing ? 'Publishing...' : 'Publish Event'}
           </button>
         </div>
       </div>
@@ -358,7 +374,26 @@ export default function NewEventPage() {
           {/* Background Image Upload */}
           <div className="bg-[#1a0a14] border border-gold/10 p-6 rounded-sm">
             <h3 className="font-cinzel text-xl text-gold border-b border-gold/10 pb-2 mb-4">Background Image</h3>
-            <div className="relative border-2 border-dashed border-gold/20 rounded-sm p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-gold/5 hover:border-gold/50 transition-colors overflow-hidden h-48">
+
+            {/* URL input */}
+            <div className="mb-4 space-y-1">
+              <label className="text-xs uppercase tracking-wider text-warm-gray">Paste Image URL</label>
+              <input
+                type="url"
+                placeholder="https://example.com/image.jpg"
+                value={imageUrl}
+                onChange={(e) => handleImageUrlChange(e.target.value)}
+                className="w-full bg-[#0d0008] border border-gold/20 rounded-sm p-3 text-cream text-sm focus:border-gold outline-none transition-colors"
+              />
+            </div>
+
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex-1 h-px bg-gold/10" />
+              <span className="text-xs text-cream/30 uppercase tracking-wider">or upload</span>
+              <div className="flex-1 h-px bg-gold/10" />
+            </div>
+
+            <div className="relative border-2 border-dashed border-gold/20 rounded-sm p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-gold/5 hover:border-gold/50 transition-colors overflow-hidden h-40">
               
               <input 
                 type="file" 
@@ -376,12 +411,12 @@ export default function NewEventPage() {
               )}
 
               <div className="relative z-10 flex flex-col items-center">
-                <Upload className="text-gold/50 mb-3" size={32} />
+                <Upload className="text-gold/50 mb-3" size={28} />
                 <p className="text-sm text-cream/80 mb-1 font-semibold drop-shadow-md">
-                  {previewImage ? 'Click to replace image' : 'Click or drop to upload'}
+                  {previewImage && imageFile ? 'Click to replace image' : 'Click or drop to upload'}
                 </p>
                 <p className="text-xs text-warm-gray drop-shadow-md">
-                  High-res landscape. Max 2MB.
+                  High-res landscape. (Requires CORS setup)
                 </p>
               </div>
 

@@ -54,7 +54,8 @@ interface DigitProps {
 
 function Digit({ place, value, height, digitStyle }: DigitProps) {
   // Always call hooks first (before early return for decimal)
-  const valueRoundedToPlace = getValueRoundedToPlace(value, place);
+  const placeAsNumber = typeof place === 'number' ? place : 1;
+  const valueRoundedToPlace = getValueRoundedToPlace(value, placeAsNumber);
   const animatedValue = useSpring(valueRoundedToPlace, { stiffness: 200, damping: 25 });
 
   useEffect(() => {
