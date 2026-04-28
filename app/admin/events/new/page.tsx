@@ -159,23 +159,23 @@ export default function NewEventPage() {
 
   return (
     <>
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
         <div>
-          <h2 className="font-cinzel text-3xl text-gold-light mb-1">Create New Event</h2>
-          <p className="font-sans text-cream/60">Select occasion, fill details, and publish.</p>
+          <h2 className="font-cinzel text-2xl md:text-3xl text-gold-light mb-1">Create New Event</h2>
+          <p className="font-sans text-sm md:text-base text-cream/60">Select occasion, fill details, and publish.</p>
         </div>
         <div className="flex items-center space-x-3">
           <Link
             href="/"
             target="_blank"
-            className="flex items-center space-x-2 border border-gold/20 px-5 py-2 rounded-sm hover:bg-gold/10 transition-colors"
+            className="flex-1 md:flex-none flex items-center justify-center space-x-2 border border-gold/20 px-4 md:px-5 py-2.5 rounded-sm hover:bg-gold/10 transition-colors"
           >
             <Eye size={16} className="text-gold" />
             <span className="font-sans text-cream text-sm">Preview</span>
           </Link>
           <button 
             onClick={handlePublish}
-            className="bg-gold text-[#1a0a14] font-cinzel px-6 py-2 rounded-sm uppercase tracking-wider text-sm hover:bg-gold-light transition-colors"
+            className="flex-1 md:flex-none bg-gold text-[#1a0a14] font-cinzel px-4 md:px-6 py-2.5 rounded-sm uppercase tracking-wider text-xs md:text-sm hover:bg-gold-light transition-colors"
           >
             Publish Event
           </button>
@@ -226,8 +226,8 @@ export default function NewEventPage() {
           {/* Event Details */}
           <div className="bg-[#1a0a14] border border-gold/10 p-6 rounded-sm space-y-6">
             <h3 className="font-cinzel text-xl text-gold border-b border-gold/10 pb-2">Event Details</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1 col-span-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+              <div className="space-y-1 md:col-span-2">
                 <label className="text-xs uppercase tracking-wider text-warm-gray">{preset.titleLabel}</label>
                 <input
                   type="text"
@@ -276,7 +276,7 @@ export default function NewEventPage() {
           {/* Location & Stream */}
           <div className="bg-[#1a0a14] border border-gold/10 p-6 rounded-sm space-y-6">
             <h3 className="font-cinzel text-xl text-gold border-b border-gold/10 pb-2">Location & Stream</h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <div className="space-y-1">
                 <label className="text-xs uppercase tracking-wider text-warm-gray">Venue Name</label>
                 <input
@@ -311,7 +311,7 @@ export default function NewEventPage() {
                   <option>Other</option>
                 </select>
               </div>
-              <div className="space-y-1 col-span-2">
+              <div className="space-y-1 md:col-span-2">
                 <label className="text-xs uppercase tracking-wider text-warm-gray">Embed / Watch URL</label>
                 <input
                   type="text"
