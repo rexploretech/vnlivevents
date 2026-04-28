@@ -15,8 +15,17 @@ const firebaseConfig = {
 
 // Initialize Firebase only if it hasn't been initialized yet
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const db = getFirestore(app);
-const auth = getAuth(app);
-const storage = getStorage(app);
+
+let db!: ReturnType<typeof getFirestore>;
+let auth!: ReturnType<typeof getAuth>;
+let storage!: ReturnType<typeof getStorage>;
+
+try {
+  db = getFirestore(app);
+  auth = getAuth(app);
+  storage = getStorage(app);
+} catch (error) {
+  console.warn("Firebase services not initialized. This is expected during build if env vars are missing.");
+}
 
 export { app, db, auth, storage };
