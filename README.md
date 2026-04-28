@@ -6,10 +6,9 @@
 
 - **Cinematic Experience**: Immersive UI with background particles, custom typography, and fluid Framer Motion animations.
 - **Smart Countdown**: Real-time countdown that automatically flips to the Live Stream once the event begins.
-- **Integrated Live Player**: Custom-styled YouTube/Live embed player with "External Player" fallback.
-- **Dynamic Theming**: Support for custom primary/secondary colors and background images (via `EventData`).
-- **Web Preview Thumbnails**: Intelligent thumbnail selection between YouTube defaults and custom high-res backgrounds.
-- **Guest Interactions**: "Leave a Blessing" guestbook (mock) and social share integration.
+- **Integrated Live Player**: custom-styled YouTube player with **robust URL normalization** (handles watch links, live streams, and mobile shares).
+- **Admin Dashboard**: Centralized event management with **Invitation Link sharing** and clipboard integration.
+- **Dynamic Theming**: Support for custom primary/secondary colors and background images.
 - **Utility Tools**: "Add to Calendar" support for Google, iCal, and Outlook.
 - **Ambient Audio**: Built-in audio player for mood-setting background music.
 
@@ -23,11 +22,11 @@
 
 ## 🚀 Recent Accomplishments
 
-- **Live Stream Player Migration**: Successfully implemented a production-ready YouTube embed system that handles URL normalization and autoplay.
+- **Live Stream Player Migration**: Successfully implemented a production-ready YouTube embed system that handles URL normalization (watch, live, share) and autoplay.
+- **Centralized Event Management**: Integrated invitation link sharing into the admin dashboard while maintaining a clean, guest-facing interface.
+- **Canonical Routing**: Implemented `/events/[slug]` canonical routes for reliable sharing and SEO.
+- **Tailwind CSS Modernization**: Updated entire codebase to use modern Tailwind CSS class names (e.g., `bg-linear-to-r`, `shrink-0`) and resolved all linter warnings.
 - **Countdown-to-Live Logic**: Engineered a seamless state transition that replaces the timer with the video player at the exact millisecond of the event start.
-- **UI Refinement**: Implemented a responsive, mobile-first invitation layout with interactive elements like the social share and guestbook sections.
-- **Dynamic Content Engine**: Created the infrastructure for `EventData` presets (wedding, birthdays, etc.) with custom color palettes and visual effects like flower petals.
-- **Event Metadata Integration**: SEO-ready page titles and meta-information that update based on the specific event being viewed.
 
 ---
 

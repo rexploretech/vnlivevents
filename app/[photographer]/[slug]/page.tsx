@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Share2, MessageSquare, Send } from 'lucide-react';
+import { Share2, MessageSquare, Send, Copy, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ParticleSystem from '@/components/invitation/ParticleSystem';
 import CountdownTimer from '@/components/invitation/CountdownTimer';
@@ -13,8 +13,7 @@ import { db } from '@/lib/firebase/config';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { useParams } from 'next/navigation';
 
-// This dynamic page will eventually fetch from Firebase based on params
-// For now, we sync with the same localStorage mock as the home page for demo purposes
+// Default fallback event
 const defaultEvent: EventData = {
   occasionType: 'wedding',
   photographerName: 'Aryan Sharma',
@@ -51,7 +50,7 @@ const fadeInUp = {
   transition: { duration: 0.8, ease: "easeOut" as const }
 };
 
-export default function DynamicInvitationPage() {
+export default function PhotographerInvitationPage() {
   const params = useParams();
   const [copied, setCopied] = useState(false);
   const [event, setEvent] = useState<EventData>(defaultEvent);
@@ -59,6 +58,38 @@ export default function DynamicInvitationPage() {
   const [showGuestbook, setShowGuestbook] = useState(false);
   const [isLive, setIsLive] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  const eventPermalink = `https://vnlivevents.vercel.app/events/${event.slug}`;
+
+  const getEmbedUrlInfo = (inputUrl: string) => {
+    let videoId = '';
+    let embedUrl = inputUrl;
+    
+    try {
+      if (inputUrl.includes('<iframe')) {
+        const srcMatch = inputUrl.match(/src=["'](.*?)["']/);
+        if (srcMatch && srcMatch[1]) embedUrl = srcMatch[1];
+      }
+
+      const ytRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|youtube\.com\/live\/)([a-zA-Z0-9_-]{11})/;
+      const match = embedUrl.match(ytRegex);
+      
+      if (match && match[1]) {
+        videoId = match[1];
+        embedUrl = `https://www.youtube.com/embed/${videoId}`;
+      }
+    } catch (err) {}
+    
+    const finalEmbedUrl = videoId ? `https://www.youtube.com/embed/${videoId}` : embedUrl;
+    const watchUrl = videoId ? `https://www.youtube.com/watch?v=${videoId}` : embedUrl;
+
+    return { embedUrl: finalEmbedUrl, videoId, watchUrl };
+  };
+
+  const { embedUrl: safeEmbedUrl, videoId, watchUrl } = getEmbedUrlInfo(event.streamEmbedUrl);
+  const ytThumbnail = videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : 'https://images.unsplash.com/photo-1540656041793-27083161304f?w=800&q=80';
+  const displayThumbnail = event.useCustomThumbnail ? event.backgroundUrl : ytThumbnail;
 
   useEffect(() => {
     const loadEvent = async () => {
@@ -76,11 +107,9 @@ export default function DynamicInvitationPage() {
           if (target.getTime() <= Date.now()) {
             setIsLive(true);
           }
-        } else {
-          console.error('Event not found');
         }
       } catch (err) {
-        console.error('Failed to fetch event from Firebase', err);
+        console.error('Failed to fetch event', err);
       }
       setIsLoading(false);
     };
@@ -99,13 +128,13 @@ export default function DynamicInvitationPage() {
         await navigator.share({
           title: event.title,
           text: `Join us for the live stream of ${event.title}'s ${event.eventType}`,
-          url: window.location.href,
+          url: eventPermalink,
         });
       } catch (err) {
         console.log('Error sharing:', err);
       }
     } else {
-      navigator.clipboard.writeText(window.location.href);
+      navigator.clipboard.writeText(eventPermalink);
       setCopied(true);
       setTimeout(() => setCopied(false), 2600);
     }
@@ -130,7 +159,6 @@ export default function DynamicInvitationPage() {
     <div className="relative min-h-screen w-full overflow-x-hidden bg-near-black" style={themeVars}>
       <AmbientAudio accentColor={event.accentColor} />
       
-      {/* Background System */}
       <div className="fixed inset-0 z-0 bg-[#0d0008]">
         {!isLoading && (
           <motion.img
@@ -156,7 +184,6 @@ export default function DynamicInvitationPage() {
         {!isLoading && event.showPetals && <ParticleSystem colors={event.particleColors} />}
       </div>
 
-      {/* Main Content */}
       <AnimatePresence>
         {!isLoading && (
           <motion.main 
@@ -166,7 +193,6 @@ export default function DynamicInvitationPage() {
             className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 pt-24 pb-32 text-center"
           >
 
-        {/* Event Type Badge */}
         <motion.div {...fadeInUp} className="flex flex-col items-center mb-8">
           <div className="w-12 h-[2px] mb-6 shadow-[0_0_10px_rgba(var(--theme-accent-rgb),0.5)]" style={{ backgroundColor: `rgba(${event.accentColorRgb}, 0.8)` }} />
           <p className="font-sans font-bold text-[11px] uppercase text-cream tracking-[0.4em] mb-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
@@ -180,7 +206,7 @@ export default function DynamicInvitationPage() {
         <motion.h1 
           {...fadeInUp}
           transition={{ ...fadeInUp.transition, delay: 0.2 }}
-          className="font-serif italic font-bold text-5xl sm:text-6xl md:text-8xl lg:text-[96px] leading-[1.1] mb-4 max-w-[90vw] mx-auto break-words" 
+          className="font-serif italic font-bold text-5xl sm:text-6xl md:text-8xl lg:text-[96px] leading-[1.1] mb-4 max-w-[90vw] mx-auto wrap-break-word" 
           style={{ color: `rgba(${event.accentColorRgb}, 0.95)`, textShadow: `0 4px 20px rgba(0,0,0,0.5)` }}
         >
           {event.title}
@@ -194,7 +220,6 @@ export default function DynamicInvitationPage() {
           {event.tagline}
         </motion.p>
 
-        {/* Date & Time */}
         <motion.div 
           {...fadeInUp}
           transition={{ ...fadeInUp.transition, delay: 0.5 }}
@@ -205,58 +230,95 @@ export default function DynamicInvitationPage() {
           <span className="font-cinzel font-bold text-lg md:text-xl text-cream tracking-widest">{event.timeFormatted}</span>
         </motion.div>
 
-        {/* Countdown */}
         <motion.div 
           {...fadeInUp}
           transition={{ ...fadeInUp.transition, delay: 0.6 }}
-          className="mb-12"
+          className="mb-12 w-full flex flex-col items-center"
         >
-          <CountdownTimer 
-            targetDate={event.dateRaw} 
-            accentColor={event.accentColor} 
-            accentColorRgb={event.accentColorRgb}
-            onComplete={() => setIsLive(true)} 
-          />
+          <AnimatePresence mode="wait">
+            {!isLive ? (
+              <motion.div
+                key="countdown"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.5 }}
+              >
+                <CountdownTimer 
+                  targetDate={event.dateRaw} 
+                  accentColor={event.accentColor} 
+                  accentColorRgb={event.accentColorRgb}
+                  onComplete={() => {
+                    setIsLive(true);
+                    setIsPlaying(true);
+                  }} 
+                />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="player"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ type: "spring", duration: 0.8, bounce: 0.3 }}
+                className="w-full max-w-4xl mx-auto space-y-4"
+              >
+                <div className="flex items-center justify-center mb-2">
+                  <div className="flex items-center space-x-2 bg-red-600/20 border border-red-500/30 px-4 py-1.5 rounded-full shadow-lg">
+                    <div className="w-2.5 h-2.5 rounded-full bg-red-600 animate-live-pulse" />
+                    <span className="text-xs uppercase font-bold tracking-[0.2em] text-red-500">Live Now</span>
+                  </div>
+                </div>
+
+                <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 bg-black/60 backdrop-blur-xl group mb-8">
+                  {!isPlaying ? (
+                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center cursor-pointer group" onClick={() => setIsPlaying(true)}>
+                      <img 
+                        src={displayThumbnail} 
+                        alt="Video Thumbnail" 
+                        className="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity duration-500"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1540656041793-27083161304f?w=800&q=80';
+                        }}
+                      />
+                      <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors duration-500" />
+                      <div className="relative z-20 w-20 h-20 bg-red-600/90 rounded-full flex items-center justify-center shadow-[0_0_200px_rgba(220,38,38,0.3)] group-hover:scale-110 group-hover:bg-red-500 transition-all overflow-hidden border border-red-400/30">
+                        <svg className="w-10 h-10 text-white ml-2 drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                      </div>
+                    </div>
+                  ) : (
+                    <iframe
+                      src={`${safeEmbedUrl}${safeEmbedUrl.includes('?') ? '&' : '?'}autoplay=1&mute=0&rel=0`}
+                      title="Live Stream"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      referrerPolicy="strict-origin-when-cross-origin"
+                      allowFullScreen
+                      className="absolute inset-0 w-full h-full border-0 animate-in fade-in duration-500 bg-black"
+                    />
+                  )}
+                </div>
+                
+                <div className="flex flex-wrap justify-center gap-4 pt-4">
+                  <motion.a
+                    href={watchUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="rounded-full px-8 py-4 flex items-center shadow-2xl border border-white/20 space-x-3 transition-all duration-300 no-underline"
+                    style={{
+                      background: `linear-gradient(135deg, ${event.accentColor}, ${event.secondaryColor})`,
+                      boxShadow: `0 10px 30px rgba(${event.accentColorRgb}, 0.4)`,
+                    }}
+                  >
+                    <Share2 size={16} className="text-white" />
+                    <span className="font-sans font-bold text-[12px] uppercase tracking-[0.2em] text-white">External Player</span>
+                  </motion.a>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
 
-        {/* Watch Live CTA */}
-        <AnimatePresence>
-          {isLive && (
-            <motion.a
-              key="live-button"
-              href={event.streamEmbedUrl.includes('youtube.com/embed/') 
-                ? event.streamEmbedUrl.replace('youtube.com/embed/', 'youtube.com/watch?v=')
-                : event.streamEmbedUrl
-              }
-              target="_blank"
-              rel="noopener noreferrer"
-              initial={{ opacity: 0, scale: 0.5, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.5, y: 20 }}
-              transition={{ 
-                type: "spring",
-                stiffness: 260,
-                damping: 20,
-                delay: 0.2
-              }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="rounded-full px-8 py-4 md:px-10 md:py-5 flex items-center shadow-xl border-2 space-x-2 md:space-x-3 mb-12 relative overflow-hidden transition-all duration-300 no-underline"
-              style={{
-                background: `linear-gradient(135deg, ${event.accentColor}, ${event.secondaryColor})`,
-                borderColor: 'rgba(255,255,255,0.2)',
-                boxShadow: `0 0 30px rgba(${event.accentColorRgb}, 0.5)`,
-              }}
-            >
-              <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-red-600 animate-live-pulse shadow-[0_0_10px_rgba(220,38,38,0.8)]" />
-              <span className="font-sans font-bold text-[12px] md:text-[14px] uppercase tracking-[0.25em] text-white drop-shadow-md">
-                Watch Live Stream
-              </span>
-            </motion.a>
-          )}
-        </AnimatePresence>
-
-        {/* Details Grid */}
         <div className="mb-16 w-full">
           <DetailGrid
             venue={event.venue}
@@ -266,14 +328,12 @@ export default function DynamicInvitationPage() {
           />
         </div>
 
-        {/* Invitation Message */}
         <motion.div {...fadeInUp} className="max-w-2xl mt-16">
           <p className="font-serif italic text-lg md:text-xl text-cream/80 leading-relaxed text-center">
             &ldquo;{event.bodyMessage}&rdquo;
           </p>
         </motion.div>
 
-        {/* Action Buttons */}
         <motion.div {...fadeInUp} className="mt-12 flex flex-wrap justify-center gap-4">
           <AddToCalendar 
             title={event.title}
@@ -306,7 +366,6 @@ export default function DynamicInvitationPage() {
           </button>
         </motion.div>
 
-        {/* Guestbook Section (Mock) */}
         <AnimatePresence>
           {showGuestbook && (
             <motion.div

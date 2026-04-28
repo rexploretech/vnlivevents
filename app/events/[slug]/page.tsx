@@ -10,30 +10,29 @@ import AddToCalendar from '@/components/invitation/AddToCalendar';
 import AmbientAudio from '@/components/invitation/AmbientAudio';
 import { type EventData } from '@/lib/occasionPresets';
 import { db } from '@/lib/firebase/config';
-import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { useParams } from 'next/navigation';
 
-// Mock event data — will eventually come from Firebase
-const mockEvent: EventData = {
+// Default fallback event
+const defaultEvent: EventData = {
   occasionType: 'wedding',
   photographerName: 'Aryan Sharma',
   photographerRole: 'Professional Cinematographer',
   photographerInitials: 'AS',
-  title: 'Mr Bean LIVE 🔴',
-  eventType: 'Watch All Episodes - Animated Mr Bean',
-  // Uncomment the line below and comment the static date to test the countdown:
-  // dateRaw: new Date(Date.now() + 10000).toISOString(),
-  dateRaw: '2020-05-15T09:00:00Z',
-  dateFormatted: 'LIVE NOW',
-  timeFormatted: '24/7',
-  tagline: 'എല്ലാ എപ്പിസോഡുകളും കാണൂ',
-  bodyMessage: 'Welcome to the 24/7 Mr Bean Live Stream! Enjoy all episodes of Animated Mr Bean.',
-  venue: 'YouTube',
-  city: 'Global',
+  title: 'Ravi & Meera',
+  eventType: 'Wedding Ceremony',
+  dateRaw: '2026-05-15T09:00:00Z',
+  dateFormatted: '15 MAY 2026',
+  timeFormatted: '09:00 AM IST',
+  tagline: 'Two souls, one beautiful journey.',
+  bodyMessage: 'We solicit your gracious virtual presence as we embark on this beautiful journey of togetherness. Join us from wherever you are to celebrate our love and bless us.',
+  venue: 'Lotus Garden Banquet Hall',
+  city: 'Mumbai, Maharashtra',
   streamPlatform: 'YouTube Live',
-  streamEmbedUrl: 'https://www.youtube.com/embed/06dm2HAebC0',
-  slug: 'mr-bean-live',
+  streamEmbedUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+  slug: 'ravi-weds-meera',
   backgroundUrl: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=2000&auto=format&fit=crop',
-  contactEmail: 'contact@example.com',
+  contactEmail: 'contact@aryansharma.com',
   contactPhone: '+91 98765 43210',
   accentColor: '#C9A84C',
   accentColorRgb: '201, 168, 76',
@@ -42,7 +41,6 @@ const mockEvent: EventData = {
   particleColors: ['#C9A84C', '#F0D080', '#C2637A'],
   overlayGradient: 'radial-gradient(ellipse at top, rgba(201,168,76,0.15) 0%, transparent 60%), radial-gradient(ellipse at bottom left, rgba(194,99,122,0.2) 0%, transparent 50%)',
   showPetals: true,
-  useCustomThumbnail: false,
 };
 
 const fadeInUp = {
@@ -52,29 +50,28 @@ const fadeInUp = {
   transition: { duration: 0.8, ease: "easeOut" as const }
 };
 
-export default function HomeInvitationPage() {
+export default function EventPage() {
+  const params = useParams();
   const [copied, setCopied] = useState(false);
-  const [event, setEvent] = useState<EventData>(mockEvent);
+  const [event, setEvent] = useState<EventData>(defaultEvent);
   const [guestMessage, setGuestMessage] = useState('');
   const [showGuestbook, setShowGuestbook] = useState(false);
   const [isLive, setIsLive] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
 
+  const eventPermalink = `https://vnlivevents.vercel.app/events/${event.slug}`;
+
   const getEmbedUrlInfo = (inputUrl: string) => {
     let videoId = '';
     let embedUrl = inputUrl;
     
     try {
-      // If user pasted an entire iframe string, extract the src attribute
       if (inputUrl.includes('<iframe')) {
         const srcMatch = inputUrl.match(/src=["'](.*?)["']/);
-        if (srcMatch && srcMatch[1]) {
-          embedUrl = srcMatch[1];
-        }
+        if (srcMatch && srcMatch[1]) embedUrl = srcMatch[1];
       }
 
-      // Robust YouTube ID extraction
       const ytRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|youtube\.com\/live\/)([a-zA-Z0-9_-]{11})/;
       const match = embedUrl.match(ytRegex);
       
@@ -82,11 +79,8 @@ export default function HomeInvitationPage() {
         videoId = match[1];
         embedUrl = `https://www.youtube.com/embed/${videoId}`;
       }
-    } catch (err) {
-      console.error("Error parsing YouTube URL:", err);
-    }
+    } catch (err) {}
     
-    // Always return a clean embed URL if we have a videoId
     const finalEmbedUrl = videoId ? `https://www.youtube.com/embed/${videoId}` : embedUrl;
     const watchUrl = videoId ? `https://www.youtube.com/watch?v=${videoId}` : embedUrl;
 
@@ -98,55 +92,35 @@ export default function HomeInvitationPage() {
   const displayThumbnail = event.useCustomThumbnail ? event.backgroundUrl : ytThumbnail;
 
   useEffect(() => {
-    const fetchLatestEvent = async () => {
+    const loadEvent = async () => {
+      if (!params?.slug) return;
+      
       try {
-        // Since we didn't have createdAt on some old tests, we'll try to query without orderBy if it fails, or just fetch all and pick one
-        // But let's try with orderBy first.
-        let q = query(collection(db, 'events'), orderBy('createdAt', 'desc'), limit(1));
-        let querySnapshot;
-        try {
-          querySnapshot = await getDocs(q);
-        } catch (idxErr: any) {
-          // If index is missing or query fails, just get any event
-          q = query(collection(db, 'events'), limit(1));
-          querySnapshot = await getDocs(q);
-        }
+        const q = query(collection(db, 'events'), where('slug', '==', params.slug));
+        const querySnapshot = await getDocs(q);
         
         if (!querySnapshot.empty) {
-          const latestEvent = querySnapshot.docs[0].data() as EventData;
-          setEvent(latestEvent);
-          const target = new Date(latestEvent.dateRaw);
-          if (target.getTime() <= Date.now()) {
-            setIsLive(true);
-          }
-        } else {
-          // Fallback to mockEvent if no events in DB
-          const target = new Date(mockEvent.dateRaw);
+          const parsed = querySnapshot.docs[0].data() as EventData;
+          setEvent(parsed);
+          
+          const target = new Date(parsed.dateRaw);
           if (target.getTime() <= Date.now()) {
             setIsLive(true);
           }
         }
-      } catch (e) {
-        console.error("Failed to load latest event:", e);
-        // Fallback to mockEvent
-        const target = new Date(mockEvent.dateRaw);
-        if (target.getTime() <= Date.now()) {
-          setIsLive(true);
-        }
+      } catch (err) {
+        console.error('Failed to fetch event', err);
       }
       setIsLoading(false);
     };
-
-    fetchLatestEvent();
-  }, []);
+    loadEvent();
+  }, [params?.slug]);
 
   useEffect(() => {
     if (event.title) {
       document.title = `${event.title} | ${event.eventType || 'Special Event'}`;
     }
   }, [event.title, event.eventType]);
-
-  const eventPermalink = `https://vnlivevents.vercel.app/events/${event.slug}`;
 
   const handleShareLink = async () => {
     if (navigator.share) {
@@ -185,7 +159,6 @@ export default function HomeInvitationPage() {
     <div className="relative min-h-screen w-full overflow-x-hidden bg-near-black" style={themeVars}>
       <AmbientAudio accentColor={event.accentColor} />
       
-      {/* Background System */}
       <div className="fixed inset-0 z-0 bg-[#0d0008]">
         {!isLoading && (
           <motion.img
@@ -211,7 +184,6 @@ export default function HomeInvitationPage() {
         {!isLoading && event.showPetals && <ParticleSystem colors={event.particleColors} />}
       </div>
 
-      {/* Main Content */}
       <AnimatePresence>
         {!isLoading && (
           <motion.main 
@@ -221,7 +193,6 @@ export default function HomeInvitationPage() {
             className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 pt-24 pb-32 text-center"
           >
 
-        {/* Event Type Badge */}
         <motion.div {...fadeInUp} className="flex flex-col items-center mb-8">
           <div className="w-12 h-[2px] mb-6 shadow-[0_0_10px_rgba(var(--theme-accent-rgb),0.5)]" style={{ backgroundColor: `rgba(${event.accentColorRgb}, 0.8)` }} />
           <p className="font-sans font-bold text-[11px] uppercase text-cream tracking-[0.4em] mb-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
@@ -249,7 +220,6 @@ export default function HomeInvitationPage() {
           {event.tagline}
         </motion.p>
 
-        {/* Date & Time */}
         <motion.div 
           {...fadeInUp}
           transition={{ ...fadeInUp.transition, delay: 0.5 }}
@@ -260,7 +230,7 @@ export default function HomeInvitationPage() {
           <span className="font-cinzel font-bold text-lg md:text-xl text-cream tracking-widest">{event.timeFormatted}</span>
         </motion.div>
 
-        {/* Countdown or Video Player Section */}
+        {/* Video / Countdown Section */}
         <motion.div 
           {...fadeInUp}
           transition={{ ...fadeInUp.transition, delay: 0.6 }}
@@ -293,7 +263,6 @@ export default function HomeInvitationPage() {
                 transition={{ type: "spring", duration: 0.8, bounce: 0.3 }}
                 className="w-full max-w-4xl mx-auto space-y-4"
               >
-                {/* Live Badge */}
                 <div className="flex items-center justify-center mb-2">
                   <div className="flex items-center space-x-2 bg-red-600/20 border border-red-500/30 px-4 py-1.5 rounded-full shadow-lg">
                     <div className="w-2.5 h-2.5 rounded-full bg-red-600 animate-live-pulse" />
@@ -301,7 +270,6 @@ export default function HomeInvitationPage() {
                   </div>
                 </div>
 
-                {/* Video Preview */}
                 <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 bg-black/60 backdrop-blur-xl group mb-8">
                   {!isPlaying ? (
                     <div className="absolute inset-0 z-10 flex flex-col items-center justify-center cursor-pointer group" onClick={() => setIsPlaying(true)}>
@@ -314,8 +282,6 @@ export default function HomeInvitationPage() {
                         }}
                       />
                       <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors duration-500" />
-                      
-                      {/* Play Button */}
                       <div className="relative z-20 w-20 h-20 bg-red-600/90 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(220,38,38,0.5)] group-hover:scale-110 group-hover:bg-red-500 transition-all overflow-hidden border border-red-400/30">
                         <svg className="w-10 h-10 text-white ml-2 drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
                       </div>
@@ -332,7 +298,6 @@ export default function HomeInvitationPage() {
                   )}
                 </div>
                 
-                {/* External Player Action */}
                 <div className="flex flex-wrap justify-center gap-4 pt-4">
                   <motion.a
                     href={watchUrl}
@@ -347,9 +312,7 @@ export default function HomeInvitationPage() {
                     }}
                   >
                     <Share2 size={16} className="text-white" />
-                    <span className="font-sans font-bold text-xs uppercase tracking-[0.2em] text-white">
-                      Open External Player
-                    </span>
+                    <span className="font-sans font-bold text-[12px] uppercase tracking-[0.2em] text-white">External Player</span>
                   </motion.a>
                 </div>
               </motion.div>
@@ -357,22 +320,21 @@ export default function HomeInvitationPage() {
           </AnimatePresence>
         </motion.div>
 
-        {/* Details Grid */}
-        <DetailGrid
-          venue={event.venue}
-          city={event.city}
-          accentColor={event.accentColor}
-          accentColorRgb={event.accentColorRgb}
-        />
+        <div className="mb-16 w-full">
+          <DetailGrid
+            venue={event.venue}
+            city={event.city}
+            accentColor={event.accentColor}
+            accentColorRgb={event.accentColorRgb}
+          />
+        </div>
 
-        {/* Invitation Message */}
         <motion.div {...fadeInUp} className="max-w-2xl mt-16">
           <p className="font-serif italic text-lg md:text-xl text-cream/80 leading-relaxed text-center">
             &ldquo;{event.bodyMessage}&rdquo;
           </p>
         </motion.div>
 
-        {/* Action Buttons */}
         <motion.div {...fadeInUp} className="mt-12 flex flex-wrap justify-center gap-4">
           <AddToCalendar 
             title={event.title}
@@ -405,8 +367,6 @@ export default function HomeInvitationPage() {
           </button>
         </motion.div>
 
-
-        {/* Guestbook Section (Mock) */}
         <AnimatePresence>
           {showGuestbook && (
             <motion.div
