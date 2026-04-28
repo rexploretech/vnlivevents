@@ -31,6 +31,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!auth) {
+      console.warn('Firebase Auth is not initialized. Check your environment variables.');
+      setLoading(false);
+      return;
+    }
+    
     const unsubscribe = onAuthStateChanged(auth, async (usr) => {
       if (usr && usr.email && ALLOWED_EMAILS.includes(usr.email.toLowerCase())) {
         setUser(usr);
@@ -46,6 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signIn = async (email: string, pass: string) => {
+    if (!auth) throw new Error('Firebase Auth is not initialized. Please check your environment variables.');
     if (!ALLOWED_EMAILS.includes(email.toLowerCase())) {
       throw new Error('Access denied: Unauthorized email address.');
     }
@@ -57,6 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signUp = async (email: string, pass: string) => {
+    if (!auth) throw new Error('Firebase Auth is not initialized. Please check your environment variables.');
     if (!ALLOWED_EMAILS.includes(email.toLowerCase())) {
       throw new Error('Access denied: Unauthorized email address.');
     }
@@ -68,7 +76,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logOut = async () => {
-    await signOut(auth);
+    if (auth) {
+      await signOut(auth);
+    }
   };
 
   return (
