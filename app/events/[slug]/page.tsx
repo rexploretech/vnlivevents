@@ -400,6 +400,20 @@ export default function EventPage() {
           )}
         </AnimatePresence>
 
+        {/* Footer Image */}
+        {event.bottomImageUrl && (
+          <motion.div 
+            {...fadeInUp} 
+            className="mt-16 w-full max-w-4xl mx-auto overflow-hidden rounded-sm shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-white/10"
+          >
+            <img 
+              src={event.bottomImageUrl} 
+              alt="Footer Image" 
+              className="w-full h-auto object-cover"
+            />
+          </motion.div>
+        )}
+
           </motion.main>
         )}
       </AnimatePresence>

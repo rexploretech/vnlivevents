@@ -22,6 +22,9 @@ export default function NewEventPage() {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState('');  
+  const [bottomPreviewImage, setBottomPreviewImage] = useState<string | null>(null);
+  const [bottomImageFile, setBottomImageFile] = useState<File | null>(null);
+  const [bottomImageUrlInput, setBottomImageUrlInput] = useState('');
   const [isPublishing, setIsPublishing] = useState(false);
 
   const preset: OccasionPreset = OCCASION_PRESETS[occasionType];
@@ -45,6 +48,7 @@ export default function NewEventPage() {
     accentColor: preset.accentColor,
     secondaryColor: preset.secondaryColor,
     showPetals: true,
+    bottomImageUrl: '',
   });
 
   useEffect(() => {
@@ -88,6 +92,29 @@ export default function NewEventPage() {
       setPreviewImage(url);
     } else {
       setPreviewImage(null);
+    }
+  };
+
+  const handleBottomImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setBottomImageFile(file);
+      setBottomImageUrlInput('');
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setBottomPreviewImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleBottomImageUrlChange = (url: string) => {
+    setBottomImageUrlInput(url);
+    if (url) {
+      setBottomImageFile(null);
+      setBottomPreviewImage(url);
+    } else {
+      setBottomPreviewImage(null);
     }
   };
 
@@ -139,6 +166,15 @@ export default function NewEventPage() {
         finalBackgroundUrl = await getDownloadURL(fileRef);
       }
 
+      let finalBottomImageUrl = '';
+      if (bottomImageUrlInput) {
+        finalBottomImageUrl = bottomImageUrlInput;
+      } else if (bottomImageFile) {
+        const fileRef = ref(storage, `events/${Date.now()}_bottom_${bottomImageFile.name}`);
+        await uploadBytes(fileRef, bottomImageFile);
+        finalBottomImageUrl = await getDownloadURL(fileRef);
+      }
+
       const generatedSlug = formData.slug || formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
 
       const fullEvent = {
@@ -155,6 +191,7 @@ export default function NewEventPage() {
         overlayGradient: `radial-gradient(ellipse at top, rgba(${accentRgb},0.18) 0%, transparent 60%), radial-gradient(ellipse at bottom left, rgba(${secondaryRgb},0.15) 0%, transparent 50%)`,
         particleColors: [formData.accentColor, formData.secondaryColor, preset.particleColors[2] || '#ffffff'],
         createdAt: serverTimestamp(),
+        bottomImageUrl: finalBottomImageUrl,
       };
 
       await addDoc(collection(db, 'events'), fullEvent);
@@ -482,6 +519,54 @@ export default function NewEventPage() {
                     ` 
                   }} 
                 />
+              </div>
+            </div>
+          </div>
+
+          {/* Footer Image Upload */}
+          <div className="bg-[#1a0a14] border border-gold/10 p-6 rounded-sm">
+            <h3 className="font-cinzel text-xl text-gold border-b border-gold/10 pb-2 mb-4">Footer / End Image</h3>
+            <p className="text-xs text-cream/50 mb-4">An optional image to display at the very bottom of the invitation.</p>
+
+            {/* URL input */}
+            <div className="mb-4 space-y-1">
+              <label className="text-xs uppercase tracking-wider text-warm-gray">Paste Image URL</label>
+              <input
+                type="url"
+                placeholder="https://example.com/footer.jpg"
+                value={bottomImageUrlInput}
+                onChange={(e) => handleBottomImageUrlChange(e.target.value)}
+                className="w-full bg-[#0d0008] border border-gold/20 rounded-sm p-3 text-cream text-sm focus:border-gold outline-none transition-colors"
+              />
+            </div>
+
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex-1 h-px bg-gold/10" />
+              <span className="text-xs text-cream/30 uppercase tracking-wider">or upload</span>
+              <div className="flex-1 h-px bg-gold/10" />
+            </div>
+
+            <div className="relative border-2 border-dashed border-gold/20 rounded-sm p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-gold/5 hover:border-gold/50 transition-colors overflow-hidden h-40">
+              <input 
+                type="file" 
+                accept="image/*"
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
+                onChange={handleBottomImageChange}
+              />
+
+              {bottomPreviewImage && (
+                <img 
+                  src={bottomPreviewImage} 
+                  alt="Footer Preview" 
+                  className="absolute inset-0 w-full h-full object-cover opacity-50 z-0" 
+                />
+              )}
+
+              <div className="relative z-10 flex flex-col items-center">
+                <Upload className="text-gold/50 mb-3" size={28} />
+                <p className="text-sm text-cream/80 mb-1 font-semibold drop-shadow-md">
+                  {bottomPreviewImage && bottomImageFile ? 'Click to replace image' : 'Click or drop to upload'}
+                </p>
               </div>
             </div>
           </div>

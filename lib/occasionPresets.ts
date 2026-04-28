@@ -177,4 +177,5 @@ export interface EventData {
   overlayGradient: string;
   showPetals: boolean;
   useCustomThumbnail?: boolean;
+  bottomImageUrl?: string;
 }
