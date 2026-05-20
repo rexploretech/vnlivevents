@@ -1,15 +1,16 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
 
 export default function CustomCursor() {
   const [isHovering, setIsHovering] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
 
   // Mouse coords for the dot (immediate)
   const cursorX = useMotionValue(-100);
   const cursorY = useMotionValue(-100);
+  const rafRef = useRef<number | null>(null);
+  const latestPointerRef = useRef({ x: -100, y: -100 });
 
   // Spring settings for the outer ring (smooth trailing effect)
   const springConfig = { damping: 25, stiffness: 600, mass: 0.5 };
@@ -22,15 +23,28 @@ export default function CustomCursor() {
   const dotY = useSpring(cursorY, dotSpringConfig);
 
   useEffect(() => {
-    setIsMounted(true);
+    const coarsePointerQuery = window.matchMedia('(pointer: coarse)');
+    const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-    if (window.matchMedia('(pointer: coarse)').matches) {
+    if (coarsePointerQuery.matches || reducedMotionQuery.matches) {
       return;
     }
 
     const mouseMove = (e: MouseEvent) => {
-      cursorX.set(e.clientX - 16); 
-      cursorY.set(e.clientY - 16);
+      latestPointerRef.current = {
+        x: e.clientX - 16,
+        y: e.clientY - 16,
+      };
+
+      if (rafRef.current !== null) {
+        return;
+      }
+
+      rafRef.current = window.requestAnimationFrame(() => {
+        cursorX.set(latestPointerRef.current.x);
+        cursorY.set(latestPointerRef.current.y);
+        rafRef.current = null;
+      });
     };
 
     const handleMouseOver = (e: MouseEvent) => {
@@ -53,10 +67,11 @@ export default function CustomCursor() {
     return () => {
       window.removeEventListener('mousemove', mouseMove);
       window.removeEventListener('mouseover', handleMouseOver);
+      if (rafRef.current !== null) {
+        window.cancelAnimationFrame(rafRef.current);
+      }
     };
   }, [cursorX, cursorY]);
-
-  if (!isMounted) return null;
 
   return (
     <>

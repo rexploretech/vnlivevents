@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Share2, MessageSquare, Send, Copy, Check } from 'lucide-react';
+import { Share2, MessageSquare, Send } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ParticleSystem from '@/components/invitation/ParticleSystem';
 import CountdownTimer from '@/components/invitation/CountdownTimer';
@@ -106,7 +106,7 @@ export default function HomeInvitationPage() {
         let querySnapshot;
         try {
           querySnapshot = await getDocs(q);
-        } catch (idxErr: any) {
+        } catch {
           // If index is missing or query fails, just get any event
           q = query(collection(db, 'events'), limit(1));
           querySnapshot = await getDocs(q);
@@ -189,12 +189,9 @@ export default function HomeInvitationPage() {
       <div className="fixed inset-0 z-0 bg-[#0d0008]">
         {!isLoading && (
           <motion.img
-            initial={{ scale: 1.1, opacity: 0 }}
-            animate={{ scale: 1, opacity: 0.8 }}
-            transition={{ 
-              opacity: { duration: 1 },
-              scale: { duration: 10, repeat: Infinity, repeatType: "reverse", ease: "linear" }
-            }}
+            initial={{ scale: 1.04, opacity: 0 }}
+            animate={{ scale: 1, opacity: 0.72 }}
+            transition={{ duration: 1.2, ease: "easeOut" }}
             src={event.backgroundUrl}
             alt="Event Background"
             className="absolute inset-0 w-full h-full object-cover object-center"
