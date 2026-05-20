@@ -189,15 +189,13 @@ export default function HomeInvitationPage() {
       <div className="fixed inset-0 z-0 bg-[#0d0008]">
         {!isLoading && (
           <motion.img
-            initial={{ scale: 1.1, opacity: 0 }}
-            animate={{ scale: 1, opacity: 0.8 }}
-            transition={{ 
-              opacity: { duration: 1 },
-              scale: { duration: 10, repeat: Infinity, repeatType: "reverse", ease: "linear" }
-            }}
+            initial={{ scale: 1.04, opacity: 0 }}
+            animate={{ scale: 1, opacity: 0.72 }}
+            transition={{ duration: 1.2, ease: "easeOut" }}
             src={event.backgroundUrl}
             alt="Event Background"
             className="absolute inset-0 w-full h-full object-cover object-center"
+            style={{ willChange: 'transform, opacity' }}
           />
         )}
         <div className="absolute inset-0 bg-black/40" />

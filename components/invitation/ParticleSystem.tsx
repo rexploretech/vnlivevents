@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 
 interface ParticleSystemProps {
   colors?: string[];
@@ -17,23 +17,22 @@ interface Particle {
 }
 
 export default function ParticleSystem({ colors = ['#C9A84C', '#F0D080', '#C2637A'] }: ParticleSystemProps) {
-  const [particles, setParticles] = useState<Particle[]>([]);
-
-  useEffect(() => {
-    const generated: Particle[] = Array.from({ length: 40 }, (_, i) => ({
+  const particles = useMemo(
+    () =>
+      Array.from({ length: 18 }, (_, i) => ({
       id: i,
       x: Math.random() * 100,
-      size: Math.random() * 6 + 4, // Slightly larger for "petals"
-      delay: Math.random() * 15, // Longer spread for falling
-      duration: Math.random() * 10 + 15, // Slower fall
+      size: Math.random() * 4 + 4,
+      delay: Math.random() * 12,
+      duration: Math.random() * 8 + 18,
       color: colors[Math.floor(Math.random() * colors.length)],
-      opacity: Math.random() * 0.5 + 0.2,
-    }));
-    setParticles(generated);
-  }, [colors]);
+      opacity: Math.random() * 0.35 + 0.2,
+    })),
+    [colors]
+  );
 
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
       {particles.map((p) => (
         <div
           key={p.id}
@@ -47,7 +46,8 @@ export default function ParticleSystem({ colors = ['#C9A84C', '#F0D080', '#C2637
             borderRadius: '40% 70% 40% 70%', // Asymmetric petal shape
             animationDelay: `${p.delay}s`,
             animationDuration: `${p.duration}s`,
-            filter: 'blur(0.5px)',
+            transform: 'translate3d(0, 0, 0)',
+            willChange: 'transform, opacity',
           }}
         />
       ))}
