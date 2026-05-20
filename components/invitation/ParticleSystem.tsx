@@ -27,7 +27,7 @@ function hashSeed(input: string) {
   return Math.abs(hash) + 1;
 }
 
-function seededRandom(seed: number) {
+function pseudoRandom(seed: number) {
   const value = Math.sin(seed) * 10000;
   return value - Math.floor(value);
 }
@@ -39,16 +39,16 @@ export default function ParticleSystem({ colors = ['#C9A84C', '#F0D080', '#C2637
 
     return Array.from({ length: 18 }, (_, i) => {
       const seedBase = hashSeed(`${paletteSeed}-${i}`);
-      const colorIndex = Math.floor(seededRandom(seedBase + 5) * palette.length);
+      const colorIndex = Math.floor(pseudoRandom(seedBase + 5) * palette.length);
 
       return {
         id: i,
-        x: seededRandom(seedBase + 1) * 100,
-        size: seededRandom(seedBase + 2) * 4 + 4,
-        delay: seededRandom(seedBase + 3) * 12,
-        duration: seededRandom(seedBase + 4) * 8 + 18,
+        x: pseudoRandom(seedBase + 1) * 100,
+        size: pseudoRandom(seedBase + 2) * 4 + 4,
+        delay: pseudoRandom(seedBase + 3) * 12,
+        duration: pseudoRandom(seedBase + 4) * 8 + 18,
         color: palette[colorIndex],
-        opacity: seededRandom(seedBase + 6) * 0.35 + 0.2,
+        opacity: pseudoRandom(seedBase + 6) * 0.35 + 0.2,
       };
     });
   }, [colors]);
@@ -68,6 +68,7 @@ export default function ParticleSystem({ colors = ['#C9A84C', '#F0D080', '#C2637
             borderRadius: '40% 70% 40% 70%', // Asymmetric petal shape
             animationDelay: `${p.delay}s`,
             animationDuration: `${p.duration}s`,
+            // Keep particles crisp to avoid the extra per-frame blur cost on lower-end GPUs.
             transform: 'translate3d(0, 0, 0)',
           }}
         />
