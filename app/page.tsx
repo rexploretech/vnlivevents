@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Share2, MessageSquare, Send, Copy, Check } from 'lucide-react';
+import { Share2, MessageSquare, Send } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ParticleSystem from '@/components/invitation/ParticleSystem';
 import CountdownTimer from '@/components/invitation/CountdownTimer';
@@ -106,7 +106,7 @@ export default function HomeInvitationPage() {
         let querySnapshot;
         try {
           querySnapshot = await getDocs(q);
-        } catch (idxErr: any) {
+        } catch {
           // If index is missing or query fails, just get any event
           q = query(collection(db, 'events'), limit(1));
           querySnapshot = await getDocs(q);

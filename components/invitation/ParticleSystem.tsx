@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useState } from 'react';
 
 interface ParticleSystemProps {
   colors?: string[];
@@ -17,18 +17,16 @@ interface Particle {
 }
 
 export default function ParticleSystem({ colors = ['#C9A84C', '#F0D080', '#C2637A'] }: ParticleSystemProps) {
-  const particles = useMemo(
-    () =>
+  const [particles] = useState<Particle[]>(() =>
       Array.from({ length: 18 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      size: Math.random() * 4 + 4,
-      delay: Math.random() * 12,
-      duration: Math.random() * 8 + 18,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      opacity: Math.random() * 0.35 + 0.2,
-    })),
-    [colors]
+        id: i,
+        x: Math.random() * 100,
+        size: Math.random() * 4 + 4,
+        delay: Math.random() * 12,
+        duration: Math.random() * 8 + 18,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        opacity: Math.random() * 0.35 + 0.2,
+      }))
   );
 
   return (

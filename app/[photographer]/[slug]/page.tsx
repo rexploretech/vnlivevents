@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Share2, MessageSquare, Send, Copy, Check } from 'lucide-react';
+import { Share2, MessageSquare, Send } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ParticleSystem from '@/components/invitation/ParticleSystem';
 import CountdownTimer from '@/components/invitation/CountdownTimer';
@@ -79,7 +79,7 @@ export default function PhotographerInvitationPage() {
         videoId = match[1];
         embedUrl = `https://www.youtube.com/embed/${videoId}`;
       }
-    } catch (err) {}
+    } catch {}
     
     const finalEmbedUrl = videoId ? `https://www.youtube.com/embed/${videoId}` : embedUrl;
     const watchUrl = videoId ? `https://www.youtube.com/watch?v=${videoId}` : embedUrl;
