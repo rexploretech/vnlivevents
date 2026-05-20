@@ -23,7 +23,10 @@ export default function CustomCursor() {
   const dotY = useSpring(cursorY, dotSpringConfig);
 
   useEffect(() => {
-    if (window.matchMedia('(pointer: coarse), (prefers-reduced-motion: reduce)').matches) {
+    const coarsePointerQuery = window.matchMedia('(pointer: coarse)');
+    const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    if (coarsePointerQuery.matches || reducedMotionQuery.matches) {
       return;
     }
 

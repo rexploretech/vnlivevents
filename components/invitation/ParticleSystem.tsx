@@ -45,7 +45,6 @@ export default function ParticleSystem({ colors = ['#C9A84C', '#F0D080', '#C2637
             animationDelay: `${p.delay}s`,
             animationDuration: `${p.duration}s`,
             transform: 'translate3d(0, 0, 0)',
-            willChange: 'transform, opacity',
           }}
         />
       ))}
