@@ -195,7 +195,6 @@ export default function HomeInvitationPage() {
             src={event.backgroundUrl}
             alt="Event Background"
             className="absolute inset-0 w-full h-full object-cover object-center"
-            style={{ willChange: 'transform, opacity' }}
           />
         )}
         <div className="absolute inset-0 bg-black/40" />
