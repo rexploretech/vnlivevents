@@ -261,16 +261,17 @@ export default function HomeInvitationPage() {
         <motion.div 
           {...fadeInUp}
           transition={{ ...fadeInUp.transition, delay: 0.6 }}
-          className="mb-12 w-full flex flex-col items-center"
+          className="mb-12 w-full flex flex-col items-center max-w-4xl mx-auto space-y-6"
         >
-          <AnimatePresence mode="wait">
-            {!isLive ? (
+          {/* Countdown timer */}
+          <AnimatePresence>
+            {!isLive && (
               <motion.div
                 key="countdown"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.5 }}
+                initial={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, height: 0, y: -20, marginBottom: 0 }}
+                transition={{ duration: 0.5, ease: "easeInOut" }}
+                className="mb-4 overflow-hidden"
               >
                 <CountdownTimer 
                   targetDate={event.dateRaw} 
@@ -282,76 +283,96 @@ export default function HomeInvitationPage() {
                   }} 
                 />
               </motion.div>
-            ) : (
-              <motion.div
-                key="player"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ type: "spring", duration: 0.8, bounce: 0.3 }}
-                className="w-full max-w-4xl mx-auto space-y-4"
-              >
-                {/* Live Badge */}
-                <div className="flex items-center justify-center mb-2">
-                  <div className="flex items-center space-x-2 bg-red-600/20 border border-red-500/30 px-4 py-1.5 rounded-full shadow-lg">
-                    <div className="w-2.5 h-2.5 rounded-full bg-red-600 animate-live-pulse" />
-                    <span className="text-xs uppercase font-bold tracking-[0.2em] text-red-500">Live Now</span>
-                  </div>
-                </div>
-
-                {/* Video Preview */}
-                <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 bg-black/60 backdrop-blur-xl group mb-8">
-                  {!isPlaying ? (
-                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center cursor-pointer group" onClick={() => setIsPlaying(true)}>
-                      <img 
-                        src={displayThumbnail} 
-                        alt="Video Thumbnail" 
-                        className="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity duration-500"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1540656041793-27083161304f?w=800&q=80';
-                        }}
-                      />
-                      <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors duration-500" />
-                      
-                      {/* Play Button */}
-                      <div className="relative z-20 w-20 h-20 bg-red-600/90 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(220,38,38,0.5)] group-hover:scale-110 group-hover:bg-red-500 transition-all overflow-hidden border border-red-400/30">
-                        <svg className="w-10 h-10 text-white ml-2 drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
-                      </div>
-                    </div>
-                  ) : (
-                    <iframe
-                      src={`${safeEmbedUrl}${safeEmbedUrl.includes('?') ? '&' : '?'}autoplay=1&mute=0&rel=0`}
-                      title="Live Stream"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                      referrerPolicy="strict-origin-when-cross-origin"
-                      allowFullScreen
-                      className="absolute inset-0 w-full h-full border-0 animate-in fade-in duration-500 bg-black"
-                    />
-                  )}
-                </div>
-                
-                {/* External Player Action */}
-                <div className="flex flex-wrap justify-center gap-4 pt-4">
-                  <motion.a
-                    href={watchUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    whileHover={{ scale: 1.05, y: -2 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="rounded-full px-8 py-4 flex items-center shadow-2xl border border-white/20 space-x-3 transition-all duration-300 no-underline"
-                    style={{
-                      background: `linear-gradient(135deg, ${event.accentColor}, ${event.secondaryColor})`,
-                      boxShadow: `0 10px 30px rgba(${event.accentColorRgb}, 0.4)`,
-                    }}
-                  >
-                    <Share2 size={16} className="text-white" />
-                    <span className="font-sans font-bold text-xs uppercase tracking-[0.2em] text-white">
-                      Open External Player
-                    </span>
-                  </motion.a>
-                </div>
-              </motion.div>
             )}
           </AnimatePresence>
+
+          {/* YouTube Video Player */}
+          <div className="w-full space-y-4">
+            {/* Live/Upcoming Badge */}
+            <div className="flex items-center justify-center mb-2">
+              <AnimatePresence mode="wait">
+                {isLive ? (
+                  <motion.div
+                    key="live-badge"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    className="flex items-center space-x-2 bg-red-600/20 border border-red-500/30 px-4 py-1.5 rounded-full shadow-lg"
+                  >
+                    <div className="w-2.5 h-2.5 rounded-full bg-red-600 animate-live-pulse" />
+                    <span className="text-xs uppercase font-bold tracking-[0.2em] text-red-500">Live Now</span>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="upcoming-badge"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    className="flex items-center space-x-2 bg-white/5 border border-white/10 px-4 py-1.5 rounded-full shadow-lg"
+                    style={{ 
+                      borderColor: `rgba(${event.accentColorRgb}, 0.2)`, 
+                      backgroundColor: `rgba(${event.accentColorRgb}, 0.05)` 
+                    }}
+                  >
+                    <div className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ backgroundColor: event.accentColor }} />
+                    <span className="text-xs uppercase font-bold tracking-[0.2em]" style={{ color: event.accentColor }}>Upcoming Live</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Video Preview */}
+            <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 bg-black/60 backdrop-blur-xl group mb-8">
+              {!isPlaying ? (
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center cursor-pointer group" onClick={() => setIsPlaying(true)}>
+                  <img 
+                    src={displayThumbnail} 
+                    alt="Video Thumbnail" 
+                    className="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity duration-500"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1540656041793-27083161304f?w=800&q=80';
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors duration-500" />
+                  
+                  {/* Play Button */}
+                  <div className="relative z-20 w-20 h-20 bg-red-600/90 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(220,38,38,0.5)] group-hover:scale-110 group-hover:bg-red-500 transition-all overflow-hidden border border-red-400/30">
+                    <svg className="w-10 h-10 text-white ml-2 drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                  </div>
+                </div>
+              ) : (
+                <iframe
+                  src={`${safeEmbedUrl}${safeEmbedUrl.includes('?') ? '&' : '?'}autoplay=1&mute=0&rel=0`}
+                  title="Live Stream"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  allowFullScreen
+                  className="absolute inset-0 w-full h-full border-0 animate-in fade-in duration-500 bg-black"
+                />
+              )}
+            </div>
+            
+            {/* External Player Action */}
+            <div className="flex flex-wrap justify-center gap-4 pt-4">
+              <motion.a
+                href={watchUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                className="rounded-full px-8 py-4 flex items-center shadow-2xl border border-white/20 space-x-3 transition-all duration-300 no-underline"
+                style={{
+                  background: `linear-gradient(135deg, ${event.accentColor}, ${event.secondaryColor})`,
+                  boxShadow: `0 10px 30px rgba(${event.accentColorRgb}, 0.4)`,
+                }}
+              >
+                <Share2 size={16} className="text-white" />
+                <span className="font-sans font-bold text-xs uppercase tracking-[0.2em] text-white">
+                  Open External Player
+                </span>
+              </motion.a>
+            </div>
+          </div>
         </motion.div>
 
         {/* Details Grid */}
