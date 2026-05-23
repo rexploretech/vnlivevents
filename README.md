@@ -1,16 +1,18 @@
 # 🎬 LiveFrame: Virtual Presence Invitations
 
-**LiveFrame** is a premium, interactive web experience designed to bridge the physical gap for ceremonies, weddings, and live events. It transforms a standard invitation into a cinematic countdown and live-streaming hub.
+**LiveFrame** is a premium, interactive web experience designed to bridge the physical gap for ceremonies, weddings, and live events. It transforms a standard invitation into a cinematic countdown [...]
 
 ## ✨ Features
 
-- **Cinematic Experience**: Immersive UI with background particles, custom typography, and fluid Framer Motion animations.
-- **Smart Countdown**: Real-time countdown that automatically flips to the Live Stream once the event begins.
-- **Integrated Live Player**: custom-styled YouTube player with **robust URL normalization** (handles watch links, live streams, and mobile shares).
-- **Admin Dashboard**: Centralized event management with **Invitation Link sharing** and clipboard integration.
-- **Dynamic Theming**: Support for custom primary/secondary colors and background images.
-- **Utility Tools**: "Add to Calendar" support for Google, iCal, and Outlook.
-- **Ambient Audio**: Built-in audio player for mood-setting background music.
+| Feature | Description |
+| :--- | :--- |
+| **Cinematic Experience** | Immersive UI with background particles, custom typography, and fluid Framer Motion animations. |
+| **Smart Countdown** | Real-time countdown that automatically flips to the Live Stream once the event begins. |
+| **Integrated Live Player** | Custom-styled YouTube player with **robust URL normalization** (handles watch links, live streams, and mobile shares). |
+| **Admin Dashboard** | Centralized event management with **Invitation Link sharing** and clipboard integration. |
+| **Dynamic Theming** | Support for custom primary/secondary colors and background images. |
+| **Utility Tools** | "Add to Calendar" support for Google, iCal, and Outlook. |
+| **Ambient Audio** | Built-in audio player for mood-setting background music. |
 
 ## 🛠️ Technology Stack
 
