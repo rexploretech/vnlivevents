@@ -5,9 +5,9 @@ import { Upload, Eye, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { OCCASION_PRESETS, type OccasionType, type OccasionPreset } from '@/lib/occasionPresets';
 import { db, storage } from '@/lib/firebase/config';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 
 function hexToRgbStr(hex: string) {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -16,8 +16,12 @@ function hexToRgbStr(hex: string) {
     : '201, 168, 76';
 }
 
-export default function NewEventPage() {
+export default function EditEventPage() {
   const router = useRouter();
+  const params = useParams();
+  const eventId = params.id as string;
+
+  const [isLoading, setIsLoading] = useState(true);
   const [occasionType, setOccasionType] = useState<OccasionType>('wedding');
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -32,28 +36,81 @@ export default function NewEventPage() {
   const [formData, setFormData] = useState({
     title: '',
     slug: '',
-    eventType: preset.defaultEventType,
+    eventType: '',
     dateRaw: '',
     timeFormatted: '',
     venue: '',
     city: '',
     streamPlatform: 'YouTube Live',
     streamEmbedUrl: '',
-    tagline: preset.defaultTagline,
-    bodyMessage: preset.defaultInviteText,
+    tagline: '',
+    bodyMessage: '',
     photographerName: '',
     photographerRole: '',
     contactEmail: '',
     contactPhone: '',
-    accentColor: preset.accentColor,
-    secondaryColor: preset.secondaryColor,
+    accentColor: '#C9A84C',
+    secondaryColor: '#C2637A',
     showPetals: true,
     bottomImageUrl: '',
   });
 
   useEffect(() => {
-    // Optionally load draft from local storage here if needed in future
-  }, []);
+    const fetchEvent = async () => {
+      try {
+        const docRef = doc(db, 'events', eventId);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setOccasionType(data.occasionType || 'wedding');
+          
+          setFormData({
+            title: data.title || '',
+            slug: data.slug || '',
+            eventType: data.eventType || '',
+            dateRaw: data.dateRaw ? data.dateRaw.split('T')[0] : '', // Extract just date part if it's full datetime
+            timeFormatted: data.timeFormatted || '',
+            venue: data.venue || '',
+            city: data.city || '',
+            streamPlatform: data.streamPlatform || 'YouTube Live',
+            streamEmbedUrl: data.streamEmbedUrl || '',
+            tagline: data.tagline || '',
+            bodyMessage: data.bodyMessage || '',
+            photographerName: data.photographerName || '',
+            photographerRole: data.photographerRole || '',
+            contactEmail: data.contactEmail || '',
+            contactPhone: data.contactPhone || '',
+            accentColor: data.accentColor || '#C9A84C',
+            secondaryColor: data.secondaryColor || '#C2637A',
+            showPetals: data.showPetals ?? true,
+            bottomImageUrl: data.bottomImageUrl || '',
+          });
+
+          if (data.backgroundUrl) {
+            setImageUrl(data.backgroundUrl);
+            setPreviewImage(data.backgroundUrl);
+          }
+          if (data.bottomImageUrl) {
+            setBottomImageUrlInput(data.bottomImageUrl);
+            setBottomPreviewImage(data.bottomImageUrl);
+          }
+        } else {
+          alert('Event not found!');
+          router.push('/admin/events');
+        }
+      } catch (error) {
+        console.error("Error fetching event: ", error);
+        alert('Failed to load event data.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (eventId) {
+      fetchEvent();
+    }
+  }, [eventId, router]);
 
   const handleOccasionChange = (type: OccasionType) => {
     setOccasionType(type);
@@ -133,7 +190,7 @@ export default function NewEventPage() {
     // Parse it directly from the raw string to avoid UTC timezone shifting
     let dateFormatted = '';
     if (formData.dateRaw) {
-      // dateRaw from datetime-local is "YYYY-MM-DDTHH:mm" — safe to split directly
+      // dateRaw from datetime-local is "YYYY-MM-DDTHH:mm" or "YYYY-MM-DD"
       const datePart = formData.dateRaw.split('T')[0]; // "YYYY-MM-DD"
       const [year, month, day] = datePart.split('-');
       const monthNames = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
@@ -154,22 +211,17 @@ export default function NewEventPage() {
       dateTimeForCountdown = `${formData.dateRaw}T00:00:00`;
     }
 
-    let finalBackgroundUrl = 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=2000&auto=format&fit=crop';
+    let finalBackgroundUrl = imageUrl;
 
     try {
-      if (imageUrl) {
-        // Use the pasted URL directly — no CORS issues
-        finalBackgroundUrl = imageUrl;
-      } else if (imageFile) {
+      if (imageFile) {
         const fileRef = ref(storage, `events/${Date.now()}_${imageFile.name}`);
         await uploadBytes(fileRef, imageFile);
         finalBackgroundUrl = await getDownloadURL(fileRef);
       }
 
-      let finalBottomImageUrl = '';
-      if (bottomImageUrlInput) {
-        finalBottomImageUrl = bottomImageUrlInput;
-      } else if (bottomImageFile) {
+      let finalBottomImageUrl = bottomImageUrlInput;
+      if (bottomImageFile) {
         const fileRef = ref(storage, `events/${Date.now()}_bottom_${bottomImageFile.name}`);
         await uploadBytes(fileRef, bottomImageFile);
         finalBottomImageUrl = await getDownloadURL(fileRef);
@@ -197,12 +249,13 @@ export default function NewEventPage() {
         // Dynamic overlay based on custom chosen colors
         overlayGradient: `radial-gradient(ellipse at top, rgba(${accentRgb},0.18) 0%, transparent 60%), radial-gradient(ellipse at bottom left, rgba(${secondaryRgb},0.15) 0%, transparent 50%)`,
         particleColors: [formData.accentColor, formData.secondaryColor, preset.particleColors[2] || '#ffffff'],
-        createdAt: serverTimestamp(),
         bottomImageUrl: finalBottomImageUrl,
+        updatedAt: serverTimestamp(),
       };
 
-      await addDoc(collection(db, 'events'), fullEvent);
-      alert('Success! Event published to database.');
+      const docRef = doc(db, 'events', eventId);
+      await updateDoc(docRef, fullEvent);
+      alert('Success! Event updated.');
       router.push('/admin/events');
     } catch (e: any) {
       if (e.code === 'permission-denied') {
@@ -216,16 +269,20 @@ export default function NewEventPage() {
     }
   };
 
+  if (isLoading) {
+    return <div className="text-gold font-cinzel text-center py-12">Loading event details...</div>;
+  }
+
   return (
     <>
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
         <div>
-          <h2 className="font-cinzel text-2xl md:text-3xl text-gold-light mb-1">Create New Event</h2>
-          <p className="font-sans text-sm md:text-base text-cream/60">Select occasion, fill details, and publish.</p>
+          <h2 className="font-cinzel text-2xl md:text-3xl text-gold-light mb-1">Edit Event</h2>
+          <p className="font-sans text-sm md:text-base text-cream/60">Update details for {formData.title}.</p>
         </div>
         <div className="flex items-center space-x-3">
           <Link
-            href="/"
+            href={`/${formData.slug}`}
             target="_blank"
             className="flex-1 md:flex-none flex items-center justify-center space-x-2 border border-gold/20 px-4 md:px-5 py-2.5 rounded-sm hover:bg-gold/10 transition-colors"
           >
@@ -237,7 +294,7 @@ export default function NewEventPage() {
             disabled={isPublishing}
             className="flex-1 md:flex-none bg-gold text-[#1a0a14] font-cinzel px-4 md:px-6 py-2.5 rounded-sm uppercase tracking-wider text-xs md:text-sm hover:bg-gold-light transition-colors disabled:opacity-50"
           >
-            {isPublishing ? 'Publishing...' : 'Publish Event'}
+            {isPublishing ? 'Saving...' : 'Save Changes'}
           </button>
         </div>
       </div>
@@ -308,8 +365,6 @@ export default function NewEventPage() {
                   onChange={(e) => updateField('eventType', e.target.value)}
                 />
               </div>
-
-
 
               <div className="space-y-1">
                 <label className="text-xs uppercase tracking-wider text-warm-gray">Date</label>
@@ -457,7 +512,7 @@ export default function NewEventPage() {
               <div className="relative z-10 flex flex-col items-center">
                 <Upload className="text-gold/50 mb-3" size={28} />
                 <p className="text-sm text-cream/80 mb-1 font-semibold drop-shadow-md">
-                  {previewImage && imageFile ? 'Click to replace image' : 'Click or drop to upload'}
+                  {previewImage ? 'Click to replace image' : 'Click or drop to upload'}
                 </p>
                 <p className="text-xs text-warm-gray drop-shadow-md">
                   High-res landscape. (Requires CORS setup)
@@ -572,7 +627,7 @@ export default function NewEventPage() {
               <div className="relative z-10 flex flex-col items-center">
                 <Upload className="text-gold/50 mb-3" size={28} />
                 <p className="text-sm text-cream/80 mb-1 font-semibold drop-shadow-md">
-                  {bottomPreviewImage && bottomImageFile ? 'Click to replace image' : 'Click or drop to upload'}
+                  {bottomPreviewImage ? 'Click to replace image' : 'Click or drop to upload'}
                 </p>
               </div>
             </div>

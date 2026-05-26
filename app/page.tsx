@@ -146,7 +146,7 @@ export default function HomeInvitationPage() {
     }
   }, [event.title, event.eventType]);
 
-  const eventPermalink = `https://vnlivevents.vercel.app/events/${event.slug}`;
+  const eventPermalink = `https://vnlivevents.vercel.app/${event.slug}`;
 
   const handleShareLink = async () => {
     if (navigator.share) {

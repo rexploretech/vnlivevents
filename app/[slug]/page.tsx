@@ -10,7 +10,7 @@ import AddToCalendar from '@/components/invitation/AddToCalendar';
 import AmbientAudio from '@/components/invitation/AmbientAudio';
 import { type EventData } from '@/lib/occasionPresets';
 import { db } from '@/lib/firebase/config';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { useParams } from 'next/navigation';
 
 // Default fallback event
@@ -60,7 +60,7 @@ export default function EventPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const eventPermalink = `https://vnlivevents.vercel.app/events/${event.slug}`;
+  const eventPermalink = `https://vnlivevents.vercel.app/${event.slug}`;
 
   const getEmbedUrlInfo = (inputUrl: string) => {
     let videoId = '';
@@ -92,28 +92,31 @@ export default function EventPage() {
   const displayThumbnail = event.useCustomThumbnail ? event.backgroundUrl : ytThumbnail;
 
   useEffect(() => {
-    const loadEvent = async () => {
-      if (!params?.slug) return;
-      
-      try {
-        const q = query(collection(db, 'events'), where('slug', '==', params.slug));
-        const querySnapshot = await getDocs(q);
+    if (!params?.slug) return;
+    
+    setIsLoading(true);
+    const q = query(collection(db, 'events'), where('slug', '==', params.slug));
+    
+    // Use onSnapshot for real-time live updates
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      if (!querySnapshot.empty) {
+        const parsed = querySnapshot.docs[0].data() as EventData;
+        setEvent(parsed);
         
-        if (!querySnapshot.empty) {
-          const parsed = querySnapshot.docs[0].data() as EventData;
-          setEvent(parsed);
-          
-          const target = new Date(parsed.dateRaw);
-          if (target.getTime() <= Date.now()) {
-            setIsLive(true);
-          }
+        const target = new Date(parsed.dateRaw);
+        if (target.getTime() <= Date.now()) {
+          setIsLive(true);
+        } else {
+          setIsLive(false); // Update live status in case date changes
         }
-      } catch (err) {
-        console.error('Failed to fetch event', err);
       }
       setIsLoading(false);
-    };
-    loadEvent();
+    }, (err) => {
+      console.error('Failed to fetch event', err);
+      setIsLoading(false);
+    });
+    
+    return () => unsubscribe();
   }, [params?.slug]);
 
   useEffect(() => {

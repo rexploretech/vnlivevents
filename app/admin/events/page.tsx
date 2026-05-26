@@ -49,7 +49,7 @@ export default function EventsListPage() {
   };
 
   const copyToClipboard = (slug: string, id: string) => {
-    const url = `https://vnlivevents.vercel.app/events/${slug}`;
+    const url = `https://vnlivevents.vercel.app/${slug}`;
     navigator.clipboard.writeText(url);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
@@ -119,7 +119,7 @@ export default function EventsListPage() {
                   {copiedId === event.id && <span className="text-[10px] font-cinzel uppercase tracking-widest">Copied</span>}
                 </button>
                 <Link 
-                  href={`/events/${event.slug}`} 
+                  href={`/${event.slug}`} 
                   target="_blank"
                   className="p-3 rounded-sm border border-gold/10 text-cream/60 hover:text-gold hover:bg-gold/5 transition-all"
                   title="View Live"
