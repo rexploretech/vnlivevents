@@ -26,7 +26,7 @@ const jost = Jost({
 });
 
 export const metadata: Metadata = {
-  title: 'LiveFrame | Wedding Livestream Invitations',
+  title: 'VNLIVEVENTS | Wedding Livestream Invitations',
   description: 'Create beautiful, cinematic live-stream invitation pages.',
 };
 

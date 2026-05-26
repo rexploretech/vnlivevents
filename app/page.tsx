@@ -99,7 +99,7 @@ export default function HomePage() {
 
       {/* ── NAV ──────────────────────────────────────────────────── */}
       <nav className="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-6 md:px-12 h-16 bg-[#0d0008]/80 backdrop-blur-md border-b border-white/5">
-        <span className="font-cinzel text-[#C9A84C] text-lg tracking-widest uppercase">VN Live</span>
+        <span className="font-cinzel text-[#C9A84C] text-lg tracking-widest uppercase">VNLIVEVENTS</span>
         <div className="hidden md:flex items-center space-x-8 text-xs uppercase tracking-widest text-white/50">
           <a href="#lives" className="hover:text-[#C9A84C] transition-colors">Lives</a>
           <a href="#portfolio" className="hover:text-[#C9A84C] transition-colors">Portfolio</a>
@@ -331,12 +331,12 @@ export default function HomePage() {
         </div>
 
         <div className="border-t border-white/5 pt-10 flex flex-col md:flex-row items-center justify-between gap-6">
-          <span className="font-cinzel text-[#C9A84C] text-lg tracking-widest uppercase">VN Live Events</span>
+          <span className="font-cinzel text-[#C9A84C] text-lg tracking-widest uppercase">VNLIVEVENTS</span>
           <div className="flex items-center space-x-6">
             <a href="#" aria-label="Instagram" className="text-white/30 hover:text-[#C9A84C] transition-colors"><Share2 size={18} /></a>
             <a href="#" className="text-white/30 hover:text-[#C9A84C] transition-colors"><Play size={18} /></a>
           </div>
-          <p className="text-xs text-white/20 uppercase tracking-widest">© 2026 VN Live Events</p>
+          <p className="text-xs text-white/20 uppercase tracking-widest">© 2026 VNLIVEVENTS</p>
         </div>
       </footer>
     </div>

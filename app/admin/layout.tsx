@@ -31,7 +31,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen bg-[#120a10]">
       {/* Mobile Header */}
       <header className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-near-black border-b border-gold/10 z-50 flex items-center justify-between px-6">
-        <h1 className="font-cinzel text-gold text-xl uppercase tracking-wide">LiveFrame</h1>
+        <h1 className="font-cinzel text-gold text-xl uppercase tracking-wide">VNLIVEVENTS</h1>
         <button 
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
           className="p-2 text-gold hover:bg-gold/10 rounded-md transition-colors"
@@ -53,7 +53,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
         fixed lg:static inset-y-0 left-0 w-64 bg-near-black border-r border-gold/10 p-6 flex flex-col z-50 transition-transform duration-300 transform
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
-        <h1 className="hidden lg:block font-cinzel text-gold text-2xl mb-12 uppercase tracking-wide">LiveFrame</h1>
+        <h1 className="hidden lg:block font-cinzel text-gold text-2xl mb-12 uppercase tracking-wide">VNLIVEVENTS</h1>
         
         <nav className="flex-1 space-y-2 mt-16 lg:mt-0">
           <Link 

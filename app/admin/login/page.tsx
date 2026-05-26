@@ -91,7 +91,7 @@ export default function LoginPage() {
           <div className="flex flex-col items-center mb-8">
             <div className="w-12 h-[1px] bg-[#C9A84C]/50 mb-6" />
             <h1 className="font-cinzel text-2xl text-[#C9A84C] tracking-widest uppercase mb-1">
-              VN Live
+              VNLIVEVENTS
             </h1>
             <p className="text-xs text-white/30 uppercase tracking-[0.3em]">Admin Panel</p>
           </div>
