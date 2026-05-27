@@ -177,16 +177,7 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Toggle sign up / sign in */}
-          <div className="mt-5 text-center">
-            <button
-              type="button"
-              onClick={() => { setIsSignUp(!isSignUp); setError(''); }}
-              className="text-[11px] text-white/30 hover:text-[#C9A84C] transition-colors uppercase tracking-widest"
-            >
-              {isSignUp ? 'Already have an account? Sign In' : 'Need an account? Sign Up'}
-            </button>
-          </div>
+
 
           <div className="mt-6 h-px bg-white/5" />
           <p className="mt-4 text-center text-[10px] text-white/15 uppercase tracking-widest">
