@@ -351,7 +351,17 @@ export default function HomePage() {
             <a href="#" aria-label="Instagram" className="text-white/30 hover:text-[#C9A84C] transition-colors"><Share2 size={18} /></a>
             <a href="#" className="text-white/30 hover:text-[#C9A84C] transition-colors"><Play size={18} /></a>
           </div>
-          <p className="text-xs text-white/20 uppercase tracking-widest">© 2026 VNLIVEVENTS</p>
+          <p className="text-xs text-white/20 tracking-widest">
+            @2026 build with love ❤️ &amp;{' '}
+            <a
+              href="https://rexplore.tech"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-[#C9A84C] transition-colors underline underline-offset-4"
+            >
+              Rexplore Tech
+            </a>
+          </p>
         </div>
       </footer>
     </div>

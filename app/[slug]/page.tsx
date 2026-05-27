@@ -437,6 +437,23 @@ export default function EventPage() {
           </motion.div>
         )}
 
+        {/* Copyrights */}
+        <motion.div 
+          {...fadeInUp} 
+          className="mt-16 text-xs text-white/20 tracking-widest"
+        >
+          @2026 build with love ❤️ &amp;{' '}
+          <a
+            href="https://rexplore.tech"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:underline transition-all"
+            style={{ color: event.accentColor }}
+          >
+            Rexplore Tech
+          </a>
+        </motion.div>
+
           </motion.main>
         )}
       </AnimatePresence>
