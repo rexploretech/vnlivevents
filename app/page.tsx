@@ -342,7 +342,7 @@ export default function HomePage() {
               <span>WhatsApp Us</span>
             </a>
             <a
-              href="mailto:contact@vnliveevents.com"
+              href="mailto:vnphotography777@gmail.com"
               className="inline-flex items-center space-x-2 px-8 py-4 rounded-sm text-sm font-semibold uppercase tracking-widest border border-white/15 text-white/70 hover:border-[#C9A84C]/50 hover:text-[#C9A84C] transition-all"
             >
               <span>Send Email</span>
