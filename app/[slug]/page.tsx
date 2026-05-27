@@ -60,8 +60,6 @@ export default function EventPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const eventPermalink = `https://vnlivevents.vercel.app/${event.slug}`;
-
   const getEmbedUrlInfo = (inputUrl: string) => {
     let videoId = '';
     let embedUrl = inputUrl;
@@ -126,6 +124,7 @@ export default function EventPage() {
   }, [event.title, event.eventType]);
 
   const handleShareLink = async () => {
+    const eventPermalink = `${window.location.origin}/${event.slug}`;
     if (navigator.share) {
       try {
         await navigator.share({

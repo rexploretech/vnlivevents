@@ -49,7 +49,7 @@ export default function EventsListPage() {
   };
 
   const copyToClipboard = (slug: string, id: string) => {
-    const url = `https://vnlivevents.vercel.app/${slug}`;
+    const url = `${window.location.origin}/${slug}`;
     navigator.clipboard.writeText(url);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
