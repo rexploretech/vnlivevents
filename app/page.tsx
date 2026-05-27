@@ -100,17 +100,11 @@ export default function HomePage() {
       {/* ── NAV ──────────────────────────────────────────────────── */}
       <nav className="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-6 md:px-12 h-16 bg-[#0d0008]/80 backdrop-blur-md border-b border-white/5">
         <span className="font-cinzel text-[#C9A84C] text-lg tracking-widest uppercase">VNLIVEVENTS</span>
-        <div className="hidden md:flex items-center space-x-8 text-xs uppercase tracking-widest text-white/50">
+        <div className="flex items-center space-x-8 text-xs uppercase tracking-widest text-white/50">
           <a href="#lives" className="hover:text-[#C9A84C] transition-colors">Lives</a>
           <a href="#portfolio" className="hover:text-[#C9A84C] transition-colors">Portfolio</a>
           <a href="#contact" className="hover:text-[#C9A84C] transition-colors">Contact</a>
         </div>
-        <Link
-          href="/admin/events/new"
-          className="text-xs uppercase tracking-widest border border-[#C9A84C]/30 text-[#C9A84C] px-4 py-2 rounded-sm hover:bg-[#C9A84C]/10 transition-colors"
-        >
-          Admin
-        </Link>
       </nav>
 
       {/* ── HERO ─────────────────────────────────────────────────── */}
@@ -379,13 +373,6 @@ function SectionHeading({ eyebrow, title }: { eyebrow: string; title: string }) 
         <p className="text-xs uppercase tracking-[0.35em] text-[#C9A84C] mb-2">{eyebrow}</p>
         <h2 className="font-serif italic text-4xl md:text-5xl font-bold text-[#FDF6E3]">{title}</h2>
       </div>
-      <Link
-        href="/admin/events"
-        className="hidden sm:flex items-center space-x-2 text-xs uppercase tracking-widest text-white/30 hover:text-[#C9A84C] transition-colors"
-      >
-        <span>Manage</span>
-        <ArrowRight size={12} />
-      </Link>
     </motion.div>
   );
 }
