@@ -79,7 +79,7 @@ npm run lint   # Run ESLint
 - Firestore collection used by the app: `events`
 - Event images are uploaded to Firebase Storage under `events/...`
 - Admin access is restricted by the hardcoded `ALLOWED_EMAILS` list in:
-  - `/tmp/workspace/rexploretech/vnlivevents/lib/hooks/useAuth.tsx`
+  - `lib/hooks/useAuth.tsx`
 - Ensure Firebase Auth, Firestore, and Storage rules are configured for your deployment
 
 ## Current quality status
