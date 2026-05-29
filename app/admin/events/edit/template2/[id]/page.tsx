@@ -1,15 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Upload, Eye, Plus, Trash2, Globe, Video, Image as ImageIcon,
   Users, BookOpen, CalendarDays, Camera, Phone, Home, LayoutGrid, MapPin,
 } from 'lucide-react';
 import Link from 'next/link';
 import { db, storage } from '@/lib/firebase/config';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import Template2Renderer from '@/components/template2/Template2Renderer';
 import { type EventData } from '@/lib/occasionPresets';
 
@@ -27,8 +27,12 @@ function randomSlug(len = 7) {
 interface JourneyItem { icon: string; teluguTitle: string; englishTitle: string; description: string; }
 
 // ── component ──────────────────────────────────────────────────────────────
-export default function NewEventTemplate2Page() {
+export default function EditEventTemplate2Page() {
   const router = useRouter();
+  const params = useParams();
+  const eventId = params.id as string;
+  
+  const [isLoading, setIsLoading] = useState(true);
   const [isPublishing, setIsPublishing] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
 
@@ -130,6 +134,98 @@ export default function NewEventTemplate2Page() {
   const addProg    = () => setProgramEvents(p => [...p, { name: '', date: '', time: '', venue: '', description: '' }]);
   const removeProg = (i: number) => setProgramEvents(p => p.filter((_, idx) => idx !== i));
 
+  // ── fetch data ───────────────────────────────────────────────────────────
+  useEffect(() => {
+    const fetchEvent = async () => {
+      try {
+        const docRef = doc(db, 'events', eventId);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          
+          setForm({
+            coupleNames: data.title || '',
+            coupleNamesEn: data.coupleNamesEn || '',
+            slug: data.slug || '',
+            religion: data.religion || 'hindu',
+            accentColor: data.accentColor || '#C9A84C',
+            secondaryColor: data.secondaryColor || '#C2637A',
+            showPetals: data.showPetals ?? true,
+
+            weddingDate: data.dateRaw ? data.dateRaw.split('T')[0] : '',
+            muhurthamTime: data.timeFormatted || '',
+
+            venueName: data.venue || '',
+            venueAddress: data.venueAddress || '',
+            venueMapLink: data.venueMapLink || '',
+
+            groomResidenceName: data.groomResidence?.name || '',
+            groomResidenceAddress: data.groomResidence?.address || '',
+            groomResidenceMapLink: data.groomResidence?.mapLink || '',
+
+            groomName: data.groomDetails?.name || '',
+            groomVillage: data.groomDetails?.village || '',
+            groomParents: data.groomDetails?.parentNames || '',
+            groomFatherName: data.groomDetails?.fatherName || '',
+            groomMotherName: data.groomDetails?.motherName || '',
+            groomFatherPhone: data.groomDetails?.fatherPhone || '',
+
+            brideName: data.brideDetails?.name || '',
+            brideVillage: data.brideDetails?.village || '',
+            brideParents: data.brideDetails?.parentNames || '',
+            brideGrandfatherName: data.brideDetails?.grandfatherName || '',
+            brideGrandmotherName: data.brideDetails?.grandmotherName || '',
+
+            coupleStory: data.coupleStory || '',
+            heroSubtitle: data.heroSubtitle || '',
+            tagline: data.tagline || '',
+
+            occasionTitle: data.occasionTitle || 'శుభ కార్యక్రమాలు',
+            occasionSubtitle: data.occasionSubtitle || 'Wedding Schedule',
+
+            contactPhone: data.contactPhone || '',
+            contactWhatsapp: data.contactWhatsapp || '',
+            contactEmail: data.contactEmail || '',
+            additionalContact1Name: data.additionalContacts?.[0]?.name || '',
+            additionalContact1Role: data.additionalContacts?.[0]?.role || '',
+            additionalContact1Phone: data.additionalContacts?.[0]?.phone || '',
+            additionalContact2Name: data.additionalContacts?.[1]?.name || '',
+            additionalContact2Role: data.additionalContacts?.[1]?.role || '',
+            additionalContact2Phone: data.additionalContacts?.[1]?.phone || '',
+
+            streamPlatform: data.streamPlatform || 'YouTube Live',
+            streamEmbedUrl: data.streamEmbedUrl || '',
+          });
+
+          if (data.journeyItems && data.journeyItems.length > 0) setJourneyItems(data.journeyItems);
+          if (data.programEvents && data.programEvents.length > 0) setProgramEvents(data.programEvents);
+
+          if (data.backgroundUrl) setHeroBg({ file: null, preview: data.backgroundUrl, url: data.backgroundUrl });
+          if (data.brideDetails?.photoUrl) setBrideImg({ file: null, preview: data.brideDetails.photoUrl, url: data.brideDetails.photoUrl });
+          if (data.groomDetails?.photoUrl) setGroomImg({ file: null, preview: data.groomDetails.photoUrl, url: data.groomDetails.photoUrl });
+          if (data.couplePhotoUrl) setCoupleImg({ file: null, preview: data.couplePhotoUrl, url: data.couplePhotoUrl });
+          
+          if (data.galleryUrls && data.galleryUrls.length > 0) {
+            setGallerySlots(data.galleryUrls.map((url: string) => ({ file: null, preview: url, url })));
+          }
+        } else {
+          alert('Event not found!');
+          router.push('/admin/events');
+        }
+      } catch (error) {
+        console.error("Error fetching event: ", error);
+        alert('Failed to load event data.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (eventId) {
+      fetchEvent();
+    }
+  }, [eventId, router]);
+
   // ── image state helpers ──────────────────────────────────────────────────
   const setImgFile = (setter: (s: ImgState) => void) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -186,7 +282,7 @@ export default function NewEventTemplate2Page() {
 
       const galleryUrls = (await Promise.all(gallerySlots.map((s, i) => uploadImg(s, `gallery${i}`)))).filter(Boolean);
 
-      const doc = {
+      const payload = {
         templateType: 'template2',
         occasionType: 'wedding',
         religion: form.religion,
@@ -254,8 +350,8 @@ export default function NewEventTemplate2Page() {
         createdAt: serverTimestamp(),
       };
 
-      await addDoc(collection(db, 'events'), doc);
-      alert('✅ Template 2 event published!');
+      await updateDoc(doc(db, 'events', eventId), payload);
+      alert('✅ Template 2 event updated!');
       router.push('/admin/events');
     } catch (e: unknown) {
       const err = e as { code?: string };
@@ -320,6 +416,10 @@ export default function NewEventTemplate2Page() {
   ];
 
   // ── render ─────────────────────────────────────────────────────────────────
+  if (isLoading) {
+    return <div className="text-gold font-cinzel text-center py-12">Loading event details...</div>;
+  }
+
   return (
     <>
       {/* Template Selector */}
@@ -350,7 +450,7 @@ export default function NewEventTemplate2Page() {
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
         <div>
-          <h2 className="font-cinzel text-2xl md:text-3xl text-gold-light mb-1">Create Telugu Wedding Site</h2>
+          <h2 className="font-cinzel text-2xl md:text-3xl text-gold-light mb-1">Edit Telugu Wedding Site</h2>
           <p className="font-sans text-sm text-cream/60">Fields shared across sections are entered once.</p>
         </div>
         <div className="flex items-center gap-3">
@@ -359,7 +459,7 @@ export default function NewEventTemplate2Page() {
           </button>
           <button onClick={handlePublish} disabled={isPublishing}
             className="bg-gold text-[#1a0a14] font-cinzel px-6 py-2.5 rounded-sm uppercase tracking-wider text-sm hover:bg-gold-light transition-colors disabled:opacity-50">
-            {isPublishing ? 'Publishing…' : 'Publish Event'}
+            {isPublishing ? 'Saving…' : 'Save Changes'}
           </button>
         </div>
       </div>

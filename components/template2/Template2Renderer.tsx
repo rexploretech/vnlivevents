@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { type EventData } from '@/lib/occasionPresets';
-import { Home, BookOpen, CalendarDays, Camera, Phone } from 'lucide-react';
+import { Home, BookOpen, CalendarDays, Camera, Phone, MapPin } from 'lucide-react';
 
 export default function Template2Renderer({ event }: { event: EventData }) {
   const themeVars = {
@@ -21,13 +21,20 @@ export default function Template2Renderer({ event }: { event: EventData }) {
     { id: 'contact', icon: <Phone size={18} />, telugu: 'సంప్రదించండి', english: 'Contact' },
   ];
 
+  const religionSymbols = {
+    hindu: { top: '🪔', side: 'ॐ', mid: '🪷' },
+    christian: { top: '🕯️', side: '✝', mid: '🕊️' },
+    muslim: { top: '🕌', side: '☪', mid: '🌙' }
+  };
+  const sym = religionSymbols[event.religion as keyof typeof religionSymbols] || religionSymbols.hindu;
+
   return (
     <div className="relative min-h-screen w-full bg-[#fdfaf5] text-[#333] font-sans pb-24 overflow-x-hidden" style={themeVars}>
       
       {/* ── HEADER ── */}
       <header className="sticky top-0 z-40 bg-[#fdfaf5]/90 backdrop-blur-md shadow-sm py-3 px-4 flex justify-between items-center border-b border-[#eaddc4]">
         <div className="flex items-center gap-2">
-          <span className="text-xl">🪔</span>
+          <span className="text-xl">{sym.top}</span>
           <h1 className="font-bold text-[#b4562c] text-lg tracking-wide">{event.occasionTitle || 'శుభవివాహం'}</h1>
         </div>
         <div className="text-sm font-semibold text-[#8c3d1c]">
@@ -42,9 +49,9 @@ export default function Template2Renderer({ event }: { event: EventData }) {
         <section id="home" className="space-y-6 pt-4">
           <div className="text-center space-y-2">
             <div className="flex justify-center gap-3 mb-6">
-              <span className="text-3xl">ॐ</span>
-              <span className="text-3xl">🪷</span>
-              <span className="text-3xl">ॐ</span>
+              <span className="text-3xl">{sym.side}</span>
+              <span className="text-3xl">{sym.mid}</span>
+              <span className="text-3xl">{sym.side}</span>
             </div>
             
             {event.heroSubtitle && (
@@ -78,18 +85,51 @@ export default function Template2Renderer({ event }: { event: EventData }) {
           
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-[#fcf8f0] rounded-2xl p-5 text-center shadow-sm border border-[#f4ead2]">
-              <div className="text-4xl mb-2">🤵</div>
+              <div className="w-16 h-16 mx-auto rounded-full border-2 border-[#f4ead2] overflow-hidden mb-3">
+                {event.groomDetails?.photoUrl ? (
+                  <img src={event.groomDetails.photoUrl} alt="Groom" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-[#f9f1e1] flex items-center justify-center text-3xl">🤵</div>
+                )}
+              </div>
               <p className="text-[10px] font-bold text-[#b4562c] tracking-widest uppercase mb-1">వరుడు • GROOM</p>
               <p className="font-bold text-gray-800 text-sm">{event.groomDetails?.name || 'వంశీ రాజు'}</p>
               {event.groomDetails?.village && <p className="text-xs text-gray-500 mt-1">{event.groomDetails.village}</p>}
             </div>
             <div className="bg-[#fcf8f0] rounded-2xl p-5 text-center shadow-sm border border-[#f4ead2]">
-              <div className="text-4xl mb-2">👰</div>
+              <div className="w-16 h-16 mx-auto rounded-full border-2 border-[#f4ead2] overflow-hidden mb-3">
+                {event.brideDetails?.photoUrl ? (
+                  <img src={event.brideDetails.photoUrl} alt="Bride" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-[#f9f1e1] flex items-center justify-center text-3xl">👰</div>
+                )}
+              </div>
               <p className="text-[10px] font-bold text-[#b4562c] tracking-widest uppercase mb-1">వధువు • BRIDE</p>
               <p className="font-bold text-gray-800 text-sm">{event.brideDetails?.name || 'దివ్య భారతి'}</p>
               {event.brideDetails?.village && <p className="text-xs text-gray-500 mt-1">{event.brideDetails.village}</p>}
             </div>
           </div>
+
+          {/* Journey Items */}
+          {event.journeyItems && event.journeyItems.length > 0 && (
+            <div className="space-y-6 mt-12 relative before:absolute before:inset-0 before:ml-[28px] before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-[#ebdabc] before:to-transparent">
+              <div className="text-center relative z-10 mb-8 bg-[#fdfaf5] py-2">
+                <p className="text-xs font-bold text-[#b4562c] tracking-widest uppercase">మన యాత్ర • Our Journey</p>
+              </div>
+              {event.journeyItems.map((item, idx) => (
+                <div key={idx} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
+                  <div className="flex items-center justify-center w-14 h-14 rounded-full border-4 border-[#fdfaf5] bg-[#fcf8f0] shadow-md text-2xl z-10 shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2">
+                    {item.icon || '🌸'}
+                  </div>
+                  <div className="w-[calc(100%-4rem)] md:w-[calc(50%-3rem)] bg-white p-5 rounded-2xl shadow-sm border border-[#f4ead2]">
+                    <p className="font-bold text-[#8a4a2b] mb-0.5">{item.teluguTitle}</p>
+                    <p className="text-[9px] font-bold uppercase tracking-widest text-[#b4562c]/60 mb-2">{item.englishTitle}</p>
+                    <p className="text-xs text-gray-600 leading-relaxed">{item.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* Occasion / Program (కార్యక్రమం) */}
@@ -110,22 +150,158 @@ export default function Template2Renderer({ event }: { event: EventData }) {
              <p className="text-sm font-semibold text-[#555]">{event.dateFormatted || 'మే 10, 2026'}</p>
           </div>
           
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#f4ead2] space-y-4 text-left">
+          <div className="space-y-4">
+            {event.programEvents && event.programEvents.length > 0 ? (
+              event.programEvents.map((prog, idx) => (
+                <div key={idx} className="bg-white rounded-2xl p-6 shadow-sm border border-[#f4ead2] space-y-4 text-left">
+                  <div className="flex items-center gap-3 pb-3 border-b border-gray-100">
+                    <div className="bg-[#f9f1e1] p-2 rounded-full text-lg">💒</div>
+                    <div>
+                      <p className="font-bold text-[#b4562c] text-sm">{prog.name}</p>
+                      <p className="text-xs text-gray-400">{prog.description}</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-[10px] uppercase text-gray-400 tracking-wider">తేదీ • DATE</p>
+                      <p className="font-semibold text-sm text-gray-800">{prog.date || event.dateFormatted || 'తేదీ ప్రకటించబడలేదు'}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase text-gray-400 tracking-wider">సమయం • TIME</p>
+                      <p className="font-semibold text-sm text-gray-800">{prog.time || event.timeFormatted || 'సమయం ప్రకటించబడలేదు'}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 mt-2 pt-3 border-t border-gray-50">
+                    <div className="bg-gray-50 p-2 rounded-full text-lg">🏛️</div>
+                    <div>
+                      <p className="text-[10px] uppercase text-gray-400 tracking-wider">వేదిక • VENUE</p>
+                      <p className="font-semibold text-sm text-gray-800">{prog.venue || event.venue || 'వేదిక ప్రకటించబడలేదు'}</p>
+                      {(!prog.venue || prog.venue === event.venue) && (
+                        <p className="text-xs text-gray-500 mt-1 leading-relaxed">{event.venueAddress}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              // Fallback
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#f4ead2] space-y-4 text-left">
+                <div className="flex items-center gap-3 pb-3 border-b border-gray-100">
+                  <div className="bg-[#f9f1e1] p-2 rounded-full text-lg">💒</div>
+                  <div>
+                    <p className="font-bold text-[#b4562c] text-sm">శుభ వివాహం</p>
+                    <p className="text-xs text-gray-400">The Sacred Wedding Ceremony</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="bg-gray-50 p-2 rounded-full text-lg">🏛️</div>
+                  <div>
+                    <p className="text-[10px] uppercase text-gray-400 tracking-wider">వేదిక • VENUE</p>
+                    <p className="font-semibold text-sm text-gray-800">{event.venue}</p>
+                    <p className="text-xs text-gray-500 mt-1 leading-relaxed">{event.venueAddress}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {event.groomResidence?.name && (
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#f4ead2] space-y-4 text-left">
+                <div className="flex items-center gap-3 pb-3 border-b border-gray-100">
+                  <div className="bg-[#fcf8f0] p-2 rounded-full text-lg">🏡</div>
+                  <div>
+                    <p className="font-bold text-[#b4562c] text-sm">వరుడి స్వగ్రహం</p>
+                    <p className="text-xs text-gray-400">Groom's Residence</p>
+                  </div>
+                </div>
+                <div>
+                  <p className="font-semibold text-sm text-gray-800">{event.groomResidence.name}</p>
+                  <p className="text-xs text-gray-500 mt-1 leading-relaxed">{event.groomResidence.address}</p>
+                </div>
+                {event.groomResidence.mapLink && (
+                  <a href={event.groomResidence.mapLink} target="_blank" rel="noreferrer" className="inline-block bg-[#fdfaf5] border border-[#ebdabc] rounded-xl px-4 py-2 text-center text-[#b4562c] font-semibold text-xs hover:bg-[#f4ead2] transition-colors">
+                    Map Directions
+                  </a>
+                )}
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Gallery (గ్యాలరీ) */}
+        <section id="gallery" className="space-y-6 pt-6 border-t border-[#ebdabc]">
+          <div className="text-center space-y-2">
+            <div className="flex items-center justify-center gap-3">
+              <div className="h-px w-8 bg-[#cba37b]" />
+              <p className="text-xs font-bold text-[#b4562c] tracking-widest">ఫోటోలు</p>
+              <div className="h-px w-8 bg-[#cba37b]" />
+            </div>
+            <h2 className="text-2xl font-bold text-[#cba37b]">గ్యాలరీ</h2>
+            <p className="text-xs text-gray-500 uppercase tracking-widest">Memories</p>
+          </div>
+
+          {event.galleryUrls && event.galleryUrls.length > 0 ? (
+            <div className="grid grid-cols-2 gap-3">
+              {event.galleryUrls.map((url, idx) => (
+                <div key={idx} className={`bg-white p-1 rounded-2xl shadow-sm border border-[#f4ead2] ${idx % 3 === 0 ? 'col-span-2' : ''}`}>
+                  <img src={url} alt={`Gallery ${idx}`} className={`w-full ${idx % 3 === 0 ? 'h-48' : 'h-32'} object-cover rounded-xl`} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12 text-gray-400 text-sm">
+              <Camera className="mx-auto mb-2 opacity-30" size={32} />
+              <p>No photos added yet.</p>
+            </div>
+          )}
+        </section>
+
+        {/* Contact (సంప్రదించండి) */}
+        <section id="contact" className="space-y-6 pt-6 border-t border-[#ebdabc]">
+          <div className="text-center space-y-2">
+            <div className="flex items-center justify-center gap-3">
+              <div className="h-px w-8 bg-[#cba37b]" />
+              <p className="text-xs font-bold text-[#b4562c] tracking-widest">మమ్మల్ని</p>
+              <div className="h-px w-8 bg-[#cba37b]" />
+            </div>
+            <h2 className="text-2xl font-bold text-[#cba37b]">సంప్రదించండి</h2>
+            <p className="text-xs text-gray-500 uppercase tracking-widest">Contact & Location</p>
+          </div>
+
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#f4ead2] text-center space-y-4">
+            <div className="w-16 h-16 bg-[#fcf8f0] rounded-full flex items-center justify-center mx-auto text-[#b4562c] mb-2 border border-[#f4ead2]">
+              <Phone size={24} />
+            </div>
+            <p className="font-bold text-gray-800 text-lg">{event.contactPhone || 'No number provided'}</p>
+            
+            {(event.contactPhone || event.contactWhatsapp) && (
+              <div className="grid grid-cols-2 gap-3 pt-4 border-t border-gray-100">
+                <a href={`tel:${event.contactPhone}`} className="bg-[#fcf8f0] py-3 px-4 rounded-xl text-[#b4562c] font-bold text-sm flex items-center justify-center gap-2 hover:bg-[#f4ead2] transition-colors border border-[#ebdabc]">
+                  Call Now
+                </a>
+                <a href={`https://wa.me/${(event.contactWhatsapp || event.contactPhone)?.replace(/\D/g, '')}`} target="_blank" rel="noreferrer" className="bg-[#ecfccb] py-3 px-4 rounded-xl text-[#4d7c0f] font-bold text-sm flex items-center justify-center gap-2 hover:bg-[#d9f99d] transition-colors border border-[#bef264]">
+                  WhatsApp
+                </a>
+              </div>
+            )}
+          </div>
+          
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#f4ead2] space-y-4">
             <div className="flex items-center gap-3 pb-3 border-b border-gray-100">
-              <div className="bg-[#f9f1e1] p-2 rounded-full text-lg">💒</div>
+              <div className="bg-[#fcf8f0] p-2 rounded-full text-[#b4562c] border border-[#ebdabc]">
+                <MapPin size={20} />
+              </div>
               <div>
-                <p className="font-bold text-[#b4562c] text-sm">శుభ వివాహం</p>
-                <p className="text-xs text-gray-400">The Sacred Wedding Ceremony</p>
+                <p className="font-bold text-gray-800 text-sm">వివాహ వేదిక</p>
+                <p className="text-xs text-gray-400">Wedding Venue Map</p>
               </div>
             </div>
-            <div className="flex items-start gap-3">
-              <div className="bg-gray-50 p-2 rounded-full text-lg">🏛️</div>
-              <div>
-                <p className="text-[10px] uppercase text-gray-400 tracking-wider">వేదిక • VENUE</p>
-                <p className="font-semibold text-sm text-gray-800">{event.venue}</p>
-                <p className="text-xs text-gray-500 mt-1 leading-relaxed">{event.venueAddress}</p>
-              </div>
-            </div>
+            {event.venueMapLink ? (
+               <a href={event.venueMapLink} target="_blank" rel="noreferrer" className="block w-full bg-[#fdfaf5] border border-[#ebdabc] rounded-xl p-4 text-center text-[#b4562c] font-semibold text-sm hover:bg-[#f4ead2] transition-colors">
+                 Open in Google Maps
+               </a>
+            ) : (
+               <p className="text-center text-xs text-gray-400">No map link provided.</p>
+            )}
           </div>
         </section>
 

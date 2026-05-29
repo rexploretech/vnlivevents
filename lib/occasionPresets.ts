@@ -181,6 +181,7 @@ export interface EventData {
   bottomImageUrl?: string;
   // ── Template identification ──────────────────────────────────────────
   templateType?: 'template1' | 'template2';
+  religion?: 'hindu' | 'christian' | 'muslim';
   // ── Template 2 specific fields ───────────────────────────────────────
   coupleNamesEn?: string;          // English couple names fallback
   occasionTitle?: string;            // E.g., శుభ కార్యక్రమాలు

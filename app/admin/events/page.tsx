@@ -87,7 +87,7 @@ export default function EventsListPage() {
             >
               <div className="flex items-center space-x-6 mb-4 md:mb-0">
                 <div className="w-20 h-20 rounded-sm overflow-hidden border border-gold/20 relative shrink-0">
-                  <img src={event.backgroundUrl} alt="" className="w-full h-full object-cover opacity-60" />
+                  <img src={event.backgroundUrl || 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=200&auto=format&fit=crop'} alt="" className="w-full h-full object-cover opacity-60" />
                   <div className="absolute inset-0 bg-linear-to-t from-black/80 to-transparent" />
                 </div>
                 <div>
@@ -128,7 +128,10 @@ export default function EventsListPage() {
                 </Link>
 
                 <Link 
-                  href={`/admin/events/edit/${event.id}`}
+                  href={event.templateType === 'template2' 
+                    ? `/admin/events/edit/template2/${event.id}` 
+                    : `/admin/events/edit/${event.id}`
+                  }
                   className="p-3 rounded-sm border border-gold/10 text-cream/60 hover:text-gold hover:bg-gold/5 transition-all"
                   title="Edit"
                 >
