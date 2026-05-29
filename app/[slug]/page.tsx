@@ -12,6 +12,7 @@ import { type EventData } from '@/lib/occasionPresets';
 import { db } from '@/lib/firebase/config';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { useParams } from 'next/navigation';
+import Template2Renderer from '@/components/template2/Template2Renderer';
 
 // Default fallback event
 const defaultEvent: EventData = {
@@ -155,6 +156,10 @@ export default function EventPage() {
     if (!isNaN(d.getTime())) {
       displayDate = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
     }
+  }
+
+  if (!isLoading && event.templateType === 'template2') {
+    return <Template2Renderer event={event} />;
   }
 
   return (

@@ -178,4 +178,28 @@ export interface EventData {
   showPetals: boolean;
   useCustomThumbnail?: boolean;
   bottomImageUrl?: string;
+  // ── Template identification ──────────────────────────────────────────
+  templateType?: 'template1' | 'template2';
+  // ── Template 2 specific fields ───────────────────────────────────────
+  coupleStory?: string;              // "Our Story" section narrative
+  brideDetails?: {                   // Bride profile
+    name: string;
+    parentNames: string;
+    photoUrl: string;
+  };
+  groomDetails?: {                   // Groom profile
+    name: string;
+    parentNames: string;
+    photoUrl: string;
+  };
+  programEvents?: Array<{            // "కార్యక్రమం" – schedule items
+    name: string;
+    date: string;
+    time: string;
+    venue: string;
+    description: string;
+  }>;
+  galleryUrls?: string[];            // "గ్యాలరీ" – gallery image URLs
+  contactWhatsapp?: string;          // WhatsApp number for RSVP
+  heroSubtitle?: string;             // Telugu sub-caption below couple name
 }
