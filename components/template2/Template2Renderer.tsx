@@ -29,7 +29,7 @@ export default function Template2Renderer({ event }: { event: EventData }) {
   const sym = religionSymbols[event.religion as keyof typeof religionSymbols] || religionSymbols.hindu;
 
   return (
-    <div className="relative min-h-screen w-full bg-[#fdfaf5] text-[#333] font-sans pb-24 overflow-x-hidden" style={themeVars}>
+    <div className="relative min-h-screen w-full bg-[#fdfaf5] text-[#333] font-sans overflow-x-hidden" style={themeVars}>
       
       {/* ── HEADER ── */}
       <header className="sticky top-0 z-40 bg-[#fdfaf5]/90 backdrop-blur-md shadow-sm py-3 px-4 flex justify-between items-center border-b border-[#eaddc4]">
@@ -112,7 +112,7 @@ export default function Template2Renderer({ event }: { event: EventData }) {
 
           {/* Journey Items */}
           {event.journeyItems && event.journeyItems.length > 0 && (
-            <div className="space-y-6 mt-12 relative before:absolute before:inset-0 before:ml-[28px] before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-[#ebdabc] before:to-transparent">
+            <div className="space-y-6 mt-12 relative before:absolute before:inset-0 before:ml-[28px] before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-linear-to-b before:from-transparent before:via-[#ebdabc] before:to-transparent">
               <div className="text-center relative z-10 mb-8 bg-[#fdfaf5] py-2">
                 <p className="text-xs font-bold text-[#b4562c] tracking-widest uppercase">మన యాత్ర • Our Journey</p>
               </div>
@@ -306,18 +306,6 @@ export default function Template2Renderer({ event }: { event: EventData }) {
         </section>
 
       </main>
-
-      {/* ── BOTTOM NAV (foter.jpg) ── */}
-      <div className="fixed bottom-0 left-0 w-full z-50 bg-[#fdfaf5] shadow-[0_-5px_20px_rgba(0,0,0,0.05)] border-t-2 border-[#ebdabc]">
-        <div className="flex justify-between items-center px-2 py-2 max-w-lg mx-auto">
-          {sections.map(s => (
-            <a key={s.id} href={`#${s.id}`} className="flex flex-col items-center p-2 text-gray-400 hover:text-[#b4562c] transition-colors">
-              <span className="mb-1">{s.icon}</span>
-              <span className="text-[9px] font-bold">{s.telugu}</span>
-            </a>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }

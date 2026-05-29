@@ -184,6 +184,12 @@ export interface EventData {
   religion?: 'hindu' | 'christian' | 'muslim';
   // ── Template 2 specific fields ───────────────────────────────────────
   coupleNamesEn?: string;          // English couple names fallback
+  venueMapLink?: string;           // Google Maps URL for main venue
+  groomResidence?: {
+    name: string;
+    address: string;
+    mapLink?: string;
+  };
   occasionTitle?: string;            // E.g., శుభ కార్యక్రమాలు
   occasionSubtitle?: string;         // E.g., Wedding Schedule
   coupleStory?: string;              // "Our Story" section narrative
