@@ -159,6 +159,7 @@ export interface EventData {
   tagline: string;
   bodyMessage: string;
   venue: string;
+  venueAddress?: string;
   city: string;
   streamPlatform: string;
   streamEmbedUrl: string;
@@ -181,15 +182,31 @@ export interface EventData {
   // ── Template identification ──────────────────────────────────────────
   templateType?: 'template1' | 'template2';
   // ── Template 2 specific fields ───────────────────────────────────────
+  coupleNamesEn?: string;          // English couple names fallback
+  occasionTitle?: string;            // E.g., శుభ కార్యక్రమాలు
+  occasionSubtitle?: string;         // E.g., Wedding Schedule
   coupleStory?: string;              // "Our Story" section narrative
+  journeyItems?: Array<{
+    icon: string;
+    teluguTitle: string;
+    englishTitle: string;
+    description: string;
+  }>;
   brideDetails?: {                   // Bride profile
     name: string;
+    village?: string;
     parentNames: string;
+    grandfatherName?: string;
+    grandmotherName?: string;
     photoUrl: string;
   };
   groomDetails?: {                   // Groom profile
     name: string;
+    village?: string;
     parentNames: string;
+    fatherName?: string;
+    motherName?: string;
+    fatherPhone?: string;
     photoUrl: string;
   };
   programEvents?: Array<{            // "కార్యక్రమం" – schedule items

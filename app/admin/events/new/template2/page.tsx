@@ -59,7 +59,6 @@ export default function NewEventTemplate2Page() {
     // ─ Shared: shown in Occasion (large time) + Contact header + Home
     weddingDate: '',          // YYYY-MM-DD
     muhurthamTime: '',        // HH:MM  — shown big on Occasion page
-    weddingDayLabel: '',      // e.g. "ఆదివారం / Sunday"
 
     // ─ Shared: shown in Occasion card + Contact venue card
     venueName: '',            // e.g. "SS కన్వెన్షన్ ఫంక్షన్ హాల్"
@@ -198,7 +197,6 @@ export default function NewEventTemplate2Page() {
         dateRaw: form.weddingDate ? `${form.weddingDate}T${form.muhurthamTime || '00:00'}:00` : '',
         dateFormatted,
         timeFormatted: form.muhurthamTime,
-        weddingDayLabel: form.weddingDayLabel,
         venue: form.venueName,
         venueAddress: form.venueAddress,
         venueMapLink: form.venueMapLink,
@@ -407,11 +405,6 @@ export default function NewEventTemplate2Page() {
                 <label className={lbl}>Muhurtham Time</label>
                 <SectionNote used={['Occasion big display', 'Contact']} />
                 <input type="time" className={inp} value={form.muhurthamTime} onChange={e => up('muhurthamTime', e.target.value)} />
-              </div>
-              <div className="space-y-1">
-                <label className={lbl}>Day Label</label>
-                <input type="text" placeholder="ఆదివారం / Sunday" className={inp}
-                  value={form.weddingDayLabel} onChange={e => up('weddingDayLabel', e.target.value)} />
               </div>
             </div>
 
@@ -889,7 +882,7 @@ export default function NewEventTemplate2Page() {
 
       {/* ── LIVE PREVIEW MODAL ── */}
       {showPreview && (
-        <div className="fixed inset-0 z-[100] flex bg-black/90 backdrop-blur-sm p-4 md:p-8">
+        <div className="fixed inset-0 z-100 flex bg-black/90 backdrop-blur-sm p-4 md:p-8">
           <div className="flex-1 max-w-7xl mx-auto flex flex-col bg-[#1a0a14] border border-gold/20 rounded-xl overflow-hidden shadow-2xl">
             <div className="flex justify-between items-center p-4 border-b border-gold/10 bg-black/50">
               <h3 className="text-gold font-cinzel text-lg flex items-center gap-2"><Eye size={18} /> Live Preview Mode</h3>
@@ -899,7 +892,7 @@ export default function NewEventTemplate2Page() {
             </div>
             <div className="flex-1 overflow-y-auto bg-black flex justify-center p-4 md:p-8">
               {/* Mobile Device Mockup */}
-              <div className="w-[414px] max-w-full h-fit min-h-[800px] border-[8px] border-zinc-800 rounded-[3rem] overflow-hidden shadow-2xl relative bg-white">
+              <div className="w-[414px] max-w-full h-fit min-h-[800px] border-8 border-zinc-800 rounded-[3rem] overflow-hidden shadow-2xl relative bg-white">
                 <div className="absolute top-0 inset-x-0 h-6 bg-black z-50 flex justify-center rounded-b-xl max-w-[150px] mx-auto" />
                 <Template2Renderer event={{
                   templateType: 'template2', occasionType: 'wedding',
@@ -907,7 +900,7 @@ export default function NewEventTemplate2Page() {
                   heroSubtitle: form.heroSubtitle, tagline: form.tagline,
                   dateRaw: form.weddingDate ? `${form.weddingDate}T${form.muhurthamTime || '00:00'}:00` : '',
                   dateFormatted: form.weddingDate, timeFormatted: form.muhurthamTime,
-                  weddingDayLabel: form.weddingDayLabel, venue: form.venueName, venueAddress: form.venueAddress,
+                  venue: form.venueName, venueAddress: form.venueAddress,
                   occasionTitle: form.occasionTitle, occasionSubtitle: form.occasionSubtitle,
                   programEvents, coupleStory: form.coupleStory, bodyMessage: form.coupleStory, journeyItems,
                   brideDetails: { name: form.brideName, village: form.brideVillage, parentNames: form.brideParents, grandfatherName: form.brideGrandfatherName, grandmotherName: form.brideGrandmotherName },

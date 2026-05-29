@@ -104,10 +104,10 @@ export default function Template2Renderer({ event }: { event: EventData }) {
             <p className="text-xs text-gray-500 uppercase tracking-widest">{event.occasionSubtitle || 'Wedding Schedule'}</p>
           </div>
 
-          <div className="bg-gradient-to-br from-[#fcf8f0] to-[#f4ead2] rounded-2xl p-6 shadow-md border border-[#ebdabc] text-center">
+          <div className="bg-linear-to-br from-[#fcf8f0] to-[#f4ead2] rounded-2xl p-6 shadow-md border border-[#ebdabc] text-center">
              <p className="text-xs font-bold text-[#b4562c] tracking-widest uppercase mb-3">✨ శుభ ముహూర్తం • AUSPICIOUS TIME ✨</p>
              <h3 className="text-4xl font-bold text-[#2a5b3a] mb-2">{event.timeFormatted || '10:33 AM'}</h3>
-             <p className="text-sm font-semibold text-[#555]">{event.dateFormatted || 'మే 10, 2026'} {event.weddingDayLabel && `• ${event.weddingDayLabel}`}</p>
+             <p className="text-sm font-semibold text-[#555]">{event.dateFormatted || 'మే 10, 2026'}</p>
           </div>
           
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#f4ead2] space-y-4 text-left">
