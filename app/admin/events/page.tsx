@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Edit2, Eye, Trash2, ExternalLink, Calendar, Copy, Check } from 'lucide-react';
+import { Edit2, Eye, ExternalLink, Calendar, Copy, Check } from 'lucide-react';
 import Link from 'next/link';
 import { type EventData } from '@/lib/occasionPresets';
 import { db } from '@/lib/firebase/config';
-import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore';
 
 interface EventWithId extends EventData {
   id: string;
@@ -35,18 +35,6 @@ export default function EventsListPage() {
 
     fetchEvents();
   }, []);
-
-  const deleteEvent = async (id: string) => {
-    if (confirm('Are you sure you want to delete this event? This cannot be undone.')) {
-      try {
-        await deleteDoc(doc(db, 'events', id));
-        setEvents(events.filter(e => e.id !== id));
-      } catch (error) {
-        console.error("Error deleting event: ", error);
-        alert("Failed to delete event.");
-      }
-    }
-  };
 
   const copyToClipboard = (slug: string, id: string) => {
     const url = `${window.location.origin}/${slug}`;
@@ -137,13 +125,6 @@ export default function EventsListPage() {
                 >
                   <Edit2 size={18} />
                 </Link>
-                <button 
-                  onClick={() => deleteEvent(event.id)}
-                  className="p-3 rounded-sm border border-gold/10 text-cream/60 hover:text-red-400 hover:bg-red-400/5 transition-all"
-                  title="Delete"
-                >
-                  <Trash2 size={18} />
-                </button>
               </div>
             </div>
           ))}
