@@ -1,9 +1,9 @@
 # VNLIVEVENTS
 
-VNLIVEVENTS is a Next.js web app for creating and sharing cinematic live-event invitation pages (weddings, engagements, birthdays, housewarming, and more).
+VNLIVEVENTS is a Next.js web app for creating and sharing cinematic invitation pages for live events (weddings, engagements, birthdays, housewarmings, and more).
 
 It includes:
-- A public homepage (`/`) that showcases live/upcoming events
+- A public homepage (`/`) that showcases live and upcoming events
 - Dynamic invitation pages (`/[slug]`) for each event
 - A Firebase-backed admin panel (`/admin/...`) to create, edit, and manage events
 
@@ -11,11 +11,11 @@ It includes:
 
 - Occasion presets (wedding, half saree, birthday, engagement, baby shower, housewarming, anniversary, custom)
 - Real-time event loading from Firestore
-- Countdown-to-live transition and embedded livestream playback
+- Countdown-to-live transitions and embedded livestream playback
 - Invitation theming (accent/secondary colors, gradients, particles, optional footer image)
 - Admin event CRUD with image upload support via Firebase Storage
-- Admin auth with email/password and Google sign-in (allowlist enforced in code)
-- Share link + add-to-calendar actions
+- Admin authentication with email/password and Google sign-in (allowlist enforced in code)
+- Share link and add-to-calendar actions
 
 ## Tech stack
 
@@ -27,13 +27,13 @@ It includes:
 
 ## Project structure
 
-- `/app/page.tsx` – public homepage and event listing
-- `/app/[slug]/page.tsx` – public invitation page
-- `/app/admin/...` – admin login, layout, event list, create/edit pages
-- `/components/invitation/*` – invitation UI modules (countdown, particles, audio, calendar, etc.)
-- `/lib/occasionPresets.ts` – preset configuration + `EventData` shape
+- `/app/page.tsx` – Public homepage and event listing
+- `/app/[slug]/page.tsx` – Public invitation page
+- `/app/admin/...` – Admin login, layout, event list, and create/edit pages
+- `/components/invitation/*` – Invitation UI modules (countdown, particles, audio, calendar, etc.)
+- `/lib/occasionPresets.ts` – Preset configuration + `EventData` shape
 - `/lib/firebase/config.ts` – Firebase initialization
-- `/lib/hooks/useAuth.tsx` – admin auth context and allowlist checks
+- `/lib/hooks/useAuth.tsx` – Admin auth context and allowlist checks
 
 ## Getting started
 
@@ -69,7 +69,7 @@ Open: http://localhost:3000
 
 ```bash
 npm run dev    # Start development server
-npm run build  # Production build
+npm run build  # Create a production build
 npm run start  # Start production server
 npm run lint   # Run ESLint
 ```
@@ -80,7 +80,7 @@ npm run lint   # Run ESLint
 - Event images are uploaded to Firebase Storage under `events/...`
 - Admin access is restricted by the hardcoded `ALLOWED_EMAILS` list in:
   - `lib/hooks/useAuth.tsx`
-- Ensure Firebase Auth, Firestore, and Storage rules are configured for your deployment
+- Ensure Firebase Auth, Firestore, and Storage rules are configured correctly for deployment
 
 ## Current quality status
 
@@ -88,4 +88,4 @@ At the time of this README update:
 - `npm run lint` reports pre-existing ESLint errors/warnings in source files
 - `npm run build` fails in this sandbox because Google Fonts could not be fetched
 
-These are existing project issues and are unrelated to this documentation change.
+These are existing project issues and are unrelated to this documentation update.
